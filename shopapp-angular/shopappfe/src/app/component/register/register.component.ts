@@ -35,6 +35,7 @@ export class RegisterComponent implements OnInit {
   address: string;
   isAccepted: boolean;
   dateOfBirth: Date;
+  showPassword: boolean = false;
   registerForm: FormGroup;
 
   constructor() {
@@ -58,7 +59,6 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
   }
 
   onPhoneChange() {
@@ -68,15 +68,15 @@ export class RegisterComponent implements OnInit {
   register() {
     // const registerData = this.rfRegister.value;
     const registerData: RegisterDto = {
-      fullName: this.fullName,
-      phoneNumber: this.phoneNumber,
+      fullname: this.fullName,
+      phone_number: this.phoneNumber,
       address: this.address,
       password: this.password,
-      retypePassword: this.retypePassword,
-      dateOfBirth: this.dateOfBirth,
-      facebookAccountId: 0,
-      googleAccountId: 0,
-      roleId: 1
+      retype_password: this.retypePassword,
+      date_of_birth: this.dateOfBirth,
+      facebook_account_id: 0,
+      google_account_id: 0,
+      role_id: 1
     };
     console.log(registerData);
     this.userService.register(registerData).subscribe({
@@ -96,13 +96,18 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
   checkPasswordsMatch(passwordKey: string, retypePasswordKey: string) {
     return (group: AbstractControl) => {
       const passwordControl = group.get(passwordKey)?.value;
       const retypePasswordControl = group.get(retypePasswordKey)?.value;
-
       if (passwordControl !== retypePasswordControl) {
-        return {passwordNotMatch: true};
+        return {
+          passwordNotMatch: true
+        };
       }
       return null;
     };
