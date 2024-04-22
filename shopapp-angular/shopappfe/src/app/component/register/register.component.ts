@@ -68,15 +68,15 @@ export class RegisterComponent implements OnInit {
   register() {
     // const registerData = this.rfRegister.value;
     const registerData: RegisterDto = {
-      fullname: this.fullName,
-      phone_number: this.phoneNumber,
+      fullName: this.fullName,
+      phoneNumber: this.phoneNumber,
       address: this.address,
       password: this.password,
-      retype_password: this.retypePassword,
-      date_of_birth: this.dateOfBirth,
-      facebook_account_id: 0,
-      google_account_id: 0,
-      role_id: 1
+      retypePassword: this.retypePassword,
+      dateOfBirth: this.dateOfBirth,
+      facebookAccountId: 0,
+      googleAccountId: 0,
+      roleId: 1
     };
     console.log(registerData);
     this.userService.register(registerData).subscribe({

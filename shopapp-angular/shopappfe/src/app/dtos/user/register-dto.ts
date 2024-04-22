@@ -2,10 +2,10 @@ import {IsDate, IsNotEmpty, IsPhoneNumber, IsString} from 'class-validator';
 
 export class RegisterDto {
   @IsString()
-  fullname: string;
+  fullName: string;
 
   @IsPhoneNumber()
-  phone_number: string;
+  phoneNumber: string;
 
   @IsString()
   @IsNotEmpty()
@@ -17,24 +17,24 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  retype_password: string;
+  retypePassword: string;
 
   @IsDate()
-  date_of_birth: Date;
+  dateOfBirth: Date;
 
-  facebook_account_id: number = 0;
-  google_account_id: number = 0;
-  role_id: number = 1;
+  facebookAccountId: number = 0;
+  googleAccountId: number = 0;
+  roleId: number = 1;
 
   constructor(data: any) {
-    this.fullname = data.fullname;
-    this.phone_number = data.phone_number;
+    this.fullName = data.fullName;
+    this.phoneNumber = data.phoneNumber
     this.address = data.address;
     this.password = data.password;
-    this.retype_password = data.retype_password;
-    this.date_of_birth = data.date_of_birth;
-    this.facebook_account_id = data.facebook_account_id || 0;
-    this.google_account_id = data.google_account_id || 0;
-    this.role_id = data.role_id || 1;
+    this.retypePassword = data.retypePassword;
+    this.dateOfBirth = data.date_of_birth || new Date();
+    this.facebookAccountId = data.facebookAccountId || 0;
+    this.googleAccountId = data.googleAccountId || 0;
+    this.roleId = data.roleId || 1;
   }
 }

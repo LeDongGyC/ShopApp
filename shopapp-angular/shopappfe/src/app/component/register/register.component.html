@@ -26,6 +26,7 @@
             <label for="password">Mật khẩu</label>
             <input type="{{ showPassword ? 'text' : 'password' }}"
                    class="form-control" id="password"
+                   [(ngModel)]="password"
                    placeholder="Ít nhất 3 ký tự" required formControlName="password"
                    [class.is-invalid]="registerForm.get('password')!.invalid && registerForm.get('password')!.touched">
             <i class="password-toggle fas" [ngClass]="showPassword ? 'fa-eye' : 'fa-eye-slash'"
@@ -80,7 +81,7 @@
                    class="form-control"
                    id="date-of-birth"
                    [(ngModel)]="dateOfBirth"
-                   (input)=" checkAge(dateOfBirth.toDateString())"
+                   (input)=" checkAge(dateOfBirth.toString())"
                    formControlName="dateOfBirth">
             <div class="divider-nospace"></div>
             @if(registerForm.hasError('invalidAge')) {
