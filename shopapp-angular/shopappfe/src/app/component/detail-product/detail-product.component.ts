@@ -1,7 +1,9 @@
 import {Component} from '@angular/core';
 import {ProductService} from "../../servies/product.service";
 import {CartService} from "../../servies/cart.service";
-import {Product} from "../../models/product";
+import {Product} from "../../models/product/product";
+import {environment} from "../../../environments/environment";
+import {ProductImage} from "../../models/product/product.image";
 
 @Component({
   selector: 'app-detail-product',

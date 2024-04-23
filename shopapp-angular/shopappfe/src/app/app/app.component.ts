@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {RegisterComponent} from "../component/register/register.component";
+import {LoginComponent} from "../component/login/login.component";
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -9,6 +10,7 @@ import {RegisterComponent} from "../component/register/register.component";
   imports: [
     RouterModule,
     RegisterComponent,
+    LoginComponent,
   ]
 })
 export class AppComponent {
