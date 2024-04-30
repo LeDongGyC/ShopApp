@@ -1,3 +1,30 @@
-import { Routes } from '@angular/router';
+import {Routes} from '@angular/router';
+import {HomeComponent} from "./component/home/home.component";
+import {LoginComponent} from "./component/login/login.component";
+import {RegisterComponent} from "./component/register/register.component";
+import {DetailProductComponent} from "./component/detail-product/detail-product.component";
+import {OrderComponent} from "./component/order/order.component";
+import {OrderDetailComponent} from "./component/order-confirm/order-confirm.component";
 
-export const routes: Routes = [];
+//import { OrderAdminComponent } from './components/admin/order/order.admin.component';
+
+function UserProfileComponent() {
+
+}
+
+export const routes: Routes = [
+  {path: '', component: HomeComponent},
+  {path: 'login', component: LoginComponent},
+  {path: 'register', component: RegisterComponent},
+  {path: 'products/:id', component: DetailProductComponent},
+  {path: 'orders', component: OrderComponent},
+  // {path: 'orders', component: OrderComponent, canActivate: [AuthGuardFn]},
+  // {path: 'user-profile', component: UserProfileComponent, canActivate: [AuthGuardFn]},
+  {path: 'orders/:id', component: OrderDetailComponent},
+  //Admin
+  // {
+  //   path: 'admin',
+  //   component: AdminComponent,
+  //   canActivate:[AdminGuardFn]
+  // },
+];

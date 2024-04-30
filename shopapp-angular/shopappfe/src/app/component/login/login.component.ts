@@ -10,6 +10,7 @@ import {FooterComponent} from "../footer/footer.component";
 import {HeaderComponent} from "../header/header.component";
 import {CommonModule} from "@angular/common";
 import {LoginDto} from "../../dtos/user/login-dto";
+import {UserResponse} from "../../responses/user/user.response";
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,7 @@ import {LoginDto} from "../../dtos/user/login-dto";
     FormsModule
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   @ViewChild('loginForm') loginForm!: NgForm;
@@ -32,7 +33,7 @@ export class LoginComponent {
   roles: Role[] = []; // Mảng roles
   rememberMe: boolean = true;
   selectedRole: Role | undefined; // Biến để lưu giá trị được chọn từ dropdown
-  // userResponse?: UserResponse
+  userResponse?: UserResponse
 
   onPhoneNumberChange() {
     console.log(`Phone typed: ${this.phoneNumber}`);
@@ -85,6 +86,7 @@ export class LoginComponent {
     };
     this.userService.login(loginDTO).subscribe({
       next: (response: LoginResponse) => {
+        debugger;
         const {token} = response;
         if (this.rememberMe) {
           this.tokenService.setToken(token);
@@ -113,6 +115,33 @@ export class LoginComponent {
           //   }
           // })
         }
+        this.userService.getDetail(token).subscribe({
+          next: (response: any) => {
+            debugger
+            this.userResponse = {
+              ...response,
+              date_of_birth: new Date(response.date_of_birth),
+              // id: response.id,
+              // fullname: response.fullname,
+              // phone_number: response.phone_number,
+              // address: response.address,
+              // is_active: response.is_active,
+              // date_of_birth: new Date(response.date_of_birth),
+              // facebook_account_id: response.facebook_account_id,
+              // google_account_id: response.google_account_id,
+              // role: response.role,
+            };
+            this.userService.saveUserResponseToLocalStorage(this.userResponse);
+            this.router.navigate(['/']).then(r => console.log('Navigate to home page'));
+          },
+          complete: () => {
+            debugger;
+          },
+          error: (error: any) => {
+            debugger;
+            alert(error.error.message);
+          }
+        });
       },
       complete: () => {
         debugger;

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {HeaderComponent} from "../header/header.component";
@@ -9,6 +9,7 @@ import {ProductService} from "../../servies/product.service";
 import {CategoryService} from "../../servies/category.service";
 import {Router} from "@angular/router";
 import {environment} from "../../../environments/environment";
+import {CartService} from "../../servies/cart.service";
 
 @Component({
   selector: 'app-home',
@@ -20,9 +21,9 @@ import {environment} from "../../../environments/environment";
     FooterComponent
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   products: Product[] = [];
   categories: Category[] = []; // Dữ liệu động từ categoryService
   selectedCategoryId = 0;
@@ -34,6 +35,7 @@ export class HomeComponent {
   keyword = '';
 
   constructor(private productService: ProductService,
+              private cartService: CartService,
               private categoryService: CategoryService,
               private router: Router) {
   }
@@ -99,7 +101,11 @@ export class HomeComponent {
     return new Array(endPage - startPage + 1).fill(0).map((_, index) => startPage + index);
   }
 
-  onProductClick(id: number) {
+  onProductClick(productId: number) {
+    debugger
+    this.router.navigate(['/products', productId]);
+
   }
+
 
 }

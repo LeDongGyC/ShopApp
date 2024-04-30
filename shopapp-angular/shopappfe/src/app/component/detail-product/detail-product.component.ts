@@ -1,43 +1,49 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ProductService} from "../../servies/product.service";
 import {CartService} from "../../servies/cart.service";
 import {Product} from "../../models/product/product";
+import {CommonModule} from "@angular/common";
+import {HeaderComponent} from "../header/header.component";
+import {FooterComponent} from "../footer/footer.component";
 import {environment} from "../../../environments/environment";
 import {ProductImage} from "../../models/product/product.image";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-detail-product',
   standalone: true,
-  imports: [],
+  imports: [
+    CommonModule,
+    HeaderComponent,
+    FooterComponent,
+  ],
   templateUrl: './detail-product.component.html',
-  styleUrl: './detail-product.component.css'
+  styleUrl: './detail-product.component.scss'
 })
-export class DetailProductComponent {
+export class DetailProductComponent implements OnInit {
   product?: Product;
   productId = 0;
   currentImageIndex = 0;
   quantity = 1;
 
   constructor(private productService: ProductService,
+              private activatedRoute: ActivatedRoute,
+              private router: Router,
               private cartService: CartService) {
   }
 
   ngOnInit(): void {
     // Lấy productId từ URL
-    // const idParam = this.activatedRoute.snapshot.paramMap.get('id');
-    // this.cartService.clearCart();
-    const idParam = 5; // fake tạm 1 giá trị
-    // if (idParam !== null) {
-    //   this.productId = +idParam;
-    // }
-    this.productId = +idParam;
+    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+    if (idParam !== null) {
+      this.productId = +idParam;
+    }
     if (!isNaN(this.productId)) {
       this.productService.getDetailProduct(this.productId).subscribe({
         next: (response: any) => {
-          // Lấy danh sách ảnh sản phẩm và thay đổi URL
           if (response.product_images && response.product_images.length > 0) {
-            response.product_images.forEach((productImage: ProductImage) => {
-              productImage.imageUrl = `${environment.apiBaseUrl}/products/images/${productImage.imageUrl}`;
+            response.product_images.forEach((product_image: ProductImage) => {
+              product_image.image_url = `${environment.apiBaseUrl}/products/images/${product_image.image_url}`;
             });
           }
           this.product = response;
@@ -45,13 +51,12 @@ export class DetailProductComponent {
           this.showImage(0);
         },
         complete: () => {
+          // Xử lý khi đã hoàn tất
         },
         error: (error: any) => {
           console.error('Error fetching detail:', error);
         }
       });
-    } else {
-      console.error('Invalid productId:', idParam);
     }
   }
 
@@ -75,13 +80,11 @@ export class DetailProductComponent {
   }
 
   nextImage(): void {
-    this.currentImageIndex = (this.currentImageIndex + 1) % this.product.product_images.length;
-    this.showImage(this.currentImageIndex);
+    this.showImage(this.currentImageIndex + 1);
   }
 
   previousImage(): void {
-    this.showImage(this.currentImageIndex
-      = (this.currentImageIndex - 1 + this.product.product_images.length) % this.product.product_images.length);
+    this.showImage(this.currentImageIndex - 1);
   }
 
   addToCart(): void {
@@ -104,7 +107,7 @@ export class DetailProductComponent {
   }
 
   buyNow(): void {
-    // Thực hiện xử lý khi người dùng muốn mua ngay
+    this.router.navigate(['/orders']);
   }
 
 }

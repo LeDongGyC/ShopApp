@@ -23,10 +23,12 @@ export class ProductService {
     return this.http.get<Product[]>(this.apiGetProducts, {params});
   }
 
-  getDetailProduct(productId: number) {
-    return this.http.get(`${environment.apiBaseUrl}/products/${productId}`);
+  // getDetailProduct(productId: number): Observable<Product> {
+  //   return this.http.get<Product>(`${this.apiGetProducts}/${productId}`);
+  // }
+  getDetailProduct(productId: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiGetProducts}/${productId}`);
   }
-
   getProductsByIds(productsIds: number[]): Observable<Product[]> {
     const params = new HttpParams().set('ids', productsIds.join(','));
     return this.http.get<Product[]>(`${this.apiGetProducts}/by-ids`, {params});
