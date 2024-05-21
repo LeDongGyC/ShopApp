@@ -1,6 +1,7 @@
 package com.shopapp.shopappbe.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,7 +25,7 @@ public class ProductImage {
     private Product product;
 
     @Column(name = "image_url", length = 300)
-//    @JsonProperty("image_url")
+    @JsonProperty("image_url")
     private String imageUrl;
 
 }

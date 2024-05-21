@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemDTO {
-    @JsonProperty("productId")
+    @JsonProperty("product_id")
     private Long productId;
     @JsonProperty("quantity")
     private int quantity;

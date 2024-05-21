@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,7 +46,7 @@ public class OrderService implements IOrderService {
         Order order = new Order();
         modelMapper.map(orderDTO, order);
         order.setUser(user);
-        order.setOrderDate(new Date());//lấy thời điểm hiện tại
+        order.setOrderDate(LocalDateTime.now());//lấy thời điểm hiện tại
         order.setStatus(OrderStatus.PENDING);
         //Kiểm tra shipping date phải >= ngày hôm nay
         LocalDate shippingDate = orderDTO.getShippingDate() == null
@@ -77,7 +78,8 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order getOrder(Long id) {
-        return orderRepository.findById(id).orElse(null);
+        Order selectedOrder = orderRepository.findById(id).orElse(null);
+        return selectedOrder;
     }
 
     @Override

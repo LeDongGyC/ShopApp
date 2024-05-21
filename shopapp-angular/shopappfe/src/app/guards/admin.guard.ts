@@ -1,22 +1,22 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, CanActivateFn } from '@angular/router';
-import { Router } from '@angular/router'; // Đảm bảo bạn đã import Router ở đây.
-import { inject } from '@angular/core';
-import { of,Observable } from 'rxjs';
-import { UserService } from '../services/user.service';
-import { UserResponse } from '../responses/user/user.response';
-import { TokenService } from '../services/token.service';
+import {inject, Injectable} from '@angular/core';
+import {ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot} from '@angular/router'; // Đảm bảo bạn đã import Router ở đây.
+import {TokenService} from "../servies/token.service";
+import {UserService} from "../servies/user.service";
+import {UserResponse} from "../responses/user/user.response";
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminGuard {
-  userResponse?:UserResponse | null;
+  userResponse?: UserResponse | null;
+
   constructor(
     private tokenService: TokenService,
     private router: Router,
-    private userService:UserService
-  ) {}
+    private userService: UserService
+  ) {
+  }
 
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const isTokenExpired = this.tokenService.isTokenExpired();

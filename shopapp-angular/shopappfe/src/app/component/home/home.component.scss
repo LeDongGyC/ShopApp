@@ -1,3 +1,5 @@
+@import "../../styles/shared-styles.scss";
+
 .intro-section {
   text-align: center;
   color: white;
@@ -18,7 +20,7 @@
 
 .search-input {
   width: 300px;
-  background-color: rgb(19, 23, 42);
+  background-color: $shopapp-background-color;
   margin-right: 10px;
   border-color: rgba(255, 255, 255, 0.5);
   color: white;
@@ -83,6 +85,7 @@
 .space-x {
   margin: 0 5px;
 }
+
 .page-number {
   cursor: pointer;
   padding: 5px 10px;

@@ -24,28 +24,22 @@ public class OrderController {
     private final LocalizationUtils localizationUtils;
 
     @PostMapping("")
-    public ResponseEntity<OrderResponse> createOrder(
+    public ResponseEntity<?> createOrder(
             @Valid @RequestBody OrderDTO orderDTO,
             BindingResult result
     ) {
-        OrderResponse orderResponse = new OrderResponse();
-        if (result.hasErrors()) {
-            List<String> errorMessages = result.getFieldErrors()
-                    .stream()
-                    .map(FieldError::getDefaultMessage)
-                    .toList();
-            orderResponse.setMessage(MessageKeys.INSERT_ORDER_FAILED);
-            orderResponse.setErrors(errorMessages);
-            return ResponseEntity.badRequest().body(orderResponse);
-        }
         try {
-            Order order = orderService.createOrder(orderDTO);
-//            orderResponse.setMessage(MessageKeys.INSERT_ORDER_SUCCESSFULLY);
-            orderResponse.setOrder(order);
+            if (result.hasErrors()) {
+                List<String> errorMessages = result.getFieldErrors()
+                        .stream()
+                        .map(FieldError::getDefaultMessage)
+                        .toList();
+                return ResponseEntity.badRequest().body(errorMessages);
+            }
+            Order orderResponse = orderService.createOrder(orderDTO);
             return ResponseEntity.ok(orderResponse);
         } catch (Exception e) {
-            orderResponse.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(orderResponse);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -65,7 +59,7 @@ public class OrderController {
     public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long orderId) {
         try {
             Order existingOrder = orderService.getOrder(orderId);
-            return ResponseEntity.ok(existingOrder);
+            return ResponseEntity.ok(OrderResponse.fromOrder(existingOrder));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

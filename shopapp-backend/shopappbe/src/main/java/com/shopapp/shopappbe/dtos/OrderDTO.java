@@ -17,41 +17,47 @@ import java.util.List;
 @Setter
 public class OrderDTO {
 
-    @JsonProperty("userId")
-    @Min(value = 1, message = "User's ID must be > 0")
+    @JsonProperty("user_id")
+    //@Min(value = 1, message = "User's ID must be > 0")
     private Long userId;
 
-    @JsonProperty("fullName")
+    @JsonProperty("fullname")
     private String fullName;
 
     private String email;
 
-    @JsonProperty("phoneNumber")
+    @JsonProperty("phone_number")
     @NotBlank(message = "Phone number is required")
     @Size(min = 5, message = "Phone number must be at least 5 characters")
     private String phoneNumber;
+
+    @JsonProperty("status")
+    private String status;
 
     private String address;
 
     private String note;
 
-    @JsonProperty("totalMoney")
+    @JsonProperty("total_money")
     @Min(value = 0, message = "Total money must be >= 0")
     private Float totalMoney;
 
-    @JsonProperty("shippingMethod")
+    @JsonProperty("shipping_method")
     private String shippingMethod;
 
-    @JsonProperty("shippingAddress")
+    @JsonProperty("shipping_address")
     private String shippingAddress;
 
-    @JsonProperty("shippingDate")
+    @JsonProperty("shipping_date")
     private LocalDate shippingDate;
 
-    @JsonProperty("paymentMethod")
+    @JsonProperty("payment_method")
     private String paymentMethod;
 
-    @JsonProperty("cartItems")
-    private List<CartItemDTO> cartItems;
-}
+    @JsonProperty("coupon_code")
+    private String couponCode;
 
+    @JsonProperty("cart_items")
+    private List<CartItemDTO> cartItems;
+
+}

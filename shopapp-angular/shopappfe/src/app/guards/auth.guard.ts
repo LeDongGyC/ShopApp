@@ -1,21 +1,16 @@
-import { Injectable } from '@angular/core';
-import { 
-  ActivatedRouteSnapshot, 
-  RouterStateSnapshot, 
-  CanActivateFn 
-} from '@angular/router';
-import { TokenService } from '../services/token.service';
-import { Router } from '@angular/router'; // Đảm bảo bạn đã import Router ở đây.
-import { inject } from '@angular/core';
+import {inject, Injectable} from '@angular/core';
+import {ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot} from '@angular/router'; // Đảm bảo bạn đã import Router ở đây.
+import {TokenService} from "../servies/token.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard {  
+export class AuthGuard {
   constructor(
-    private tokenService: TokenService, 
-    private router: Router,    
-  ) {}
+    private tokenService: TokenService,
+    private router: Router,
+  ) {
+  }
 
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const isTokenExpired = this.tokenService.isTokenExpired();

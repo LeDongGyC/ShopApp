@@ -149,7 +149,7 @@ export class OrderComponent implements OnInit{
         },
         error: (error: any) => {
           debugger;
-          alert(`Lỗi khi đặt hàng: ${error}`);
+          alert(`Vui lòng điền tất cả thông tin đặt hàng!`);
         },
       });
     } else {

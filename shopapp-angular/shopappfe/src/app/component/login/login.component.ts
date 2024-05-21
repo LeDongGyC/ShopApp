@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {Role} from "../../models/role";
 import {UserService} from "../../servies/user.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -24,7 +24,7 @@ import {UserResponse} from "../../responses/user/user.response";
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit{
   @ViewChild('loginForm') loginForm!: NgForm;
   phoneNumber = '0337355842';
   password = '123456';
@@ -69,12 +69,6 @@ export class LoginComponent {
     });
   }
 
-  // createAccount() {
-  //   debugger
-  //   // Chuyển hướng người dùng đến trang đăng ký (hoặc trang tạo tài khoản)
-  //   this.router.navigate(['/register']).then(r => console.log('Navigate to register page'));
-  // }
-
   login() {
     const message = `phone: ${this.phoneNumber}` +
       `password: ${this.password}`;
@@ -90,32 +84,32 @@ export class LoginComponent {
         const {token} = response;
         if (this.rememberMe) {
           this.tokenService.setToken(token);
-          // this.userService.getUserDetail(token).subscribe({
-          //   next: (response: any) => {
-          //     debugger
-          //     this.userResponse = {
-          //       ...response,
-          //       date_of_birth: new Date(response.date_of_birth),
-          //     };
-          //     this.userService.saveUserResponseToLocalStorage(this.userResponse);
-          //     if (this.userResponse?.role.name == 'admin') {
-          //       this.router.navigate(['/admin']).then(r => console.log('Navigate to admin page'));
-          //     } else if (this.userResponse?.role.name == 'user') {
-          //       this.router.navigate(['/']).then(r => console.log('Navigate to home page'));
-          //     }
-          //
-          //   },
-          //   complete: () => {
-          //     this.cartService.refreshCart();
-          //     debugger;
-          //   },
-          //   error: (error: any) => {
-          //     debugger;
-          //     alert(error.error.message);
-          //   }
-          // })
+          this.userService.getUserDetail(token).subscribe({
+            next: (response: any) => {
+              debugger
+              this.userResponse = {
+                ...response,
+                date_of_birth: new Date(response.date_of_birth),
+              };
+              this.userService.saveUserResponseToLocalStorage(this.userResponse);
+              if (this.userResponse?.role.name == 'admin') {
+                this.router.navigate(['/admin']).then(r => console.log('Navigate to admin page'));
+              } else if (this.userResponse?.role.name == 'user') {
+                this.router.navigate(['/']).then(r => console.log('Navigate to home page'));
+              }
+
+            },
+            complete: () => {
+              // this.cartService.refreshCart();
+              debugger;
+            },
+            error: (error: any) => {
+              debugger;
+              alert(error.error.message);
+            }
+          })
         }
-        this.userService.getDetail(token).subscribe({
+        this.userService.getUserDetail(token).subscribe({
           next: (response: any) => {
             debugger
             this.userResponse = {
@@ -155,5 +149,10 @@ export class LoginComponent {
 
   togglePassword() {
     this.showPassword = !this.showPassword;
+  }
+
+  createAccount() {
+    debugger
+    this.router.navigate(['/register']);
   }
 }

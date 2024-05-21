@@ -1,12 +1,13 @@
 import {Inject, Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {HttpUtilService} from "./http-util.service";
 import {Observable} from "rxjs";
 import {LoginDto} from "../dtos/user/login-dto";
 import {RegisterDto} from "../dtos/user/register-dto";
 import {DOCUMENT} from "@angular/common";
 import {UserResponse} from "../responses/user/user.response";
+import {UpdateUserDTO} from "../dtos/user/update-user-dto";
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +37,7 @@ export class UserService {
     return this.http.post(this.apiLogin, loginDto, this.apiConfig);
   }
 
-  getDetail(token: string) {
+  getUserDetail(token: string) {
     return this.http.post(this.apiUserDetail, {
       headers: new Headers({
         'Content-Type': 'application/json',
@@ -45,16 +46,16 @@ export class UserService {
     })
   }
 
-  // updateUserDetail(token: string, updateUserDTO: UpdateUserDTO) {
-  //   debugger
-  //   let userResponse = this.getUserResponseFromLocalStorage();
-  //   return this.http.put(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {
-  //     headers: new HttpHeaders({
-  //       'Content-Type': 'application/json',
-  //       Authorization: `Bearer ${token}`
-  //     })
-  //   })
-  // }
+  updateUserDetail(token: string, updateUserDTO: UpdateUserDTO) {
+    debugger
+    let userResponse = this.getUserResponseFromLocalStorage();
+    return this.http.put(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      })
+    })
+  }
 
   saveUserResponseToLocalStorage(userResponse?: UserResponse) {
     try {

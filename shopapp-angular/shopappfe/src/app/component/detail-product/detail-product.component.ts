@@ -90,6 +90,7 @@ export class DetailProductComponent implements OnInit {
   addToCart(): void {
     if (this.product) {
       this.cartService.addToCart(this.product.id, this.quantity);
+      alert('Đã thêm sản phẩm vào giỏ hàng.')
     } else {
       // Xử lý khi product là null
       console.error('Không thể thêm sản phẩm vào giỏ hàng vì product là null.');
