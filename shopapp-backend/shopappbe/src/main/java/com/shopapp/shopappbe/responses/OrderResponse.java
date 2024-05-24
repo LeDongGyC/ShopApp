@@ -37,7 +37,7 @@ public class OrderResponse {
 
     @JsonProperty("order_date")
     //@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-    private LocalDateTime orderDate;
+    private LocalDate orderDate;
 
     @JsonProperty("status")
     private String status;
@@ -61,10 +61,10 @@ public class OrderResponse {
     private List<OrderDetail> orderDetails;
 
     public static OrderResponse fromOrder(Order order) {
-        OrderResponse orderResponse = OrderResponse
+        return OrderResponse
                 .builder()
                 .id(order.getId())
-                .userId(order.getUser().getId())
+                .userId(order.getId())
                 .fullName(order.getFullName())
                 .phoneNumber(order.getPhoneNumber())
                 .email(order.getEmail())
@@ -79,6 +79,5 @@ public class OrderResponse {
                 .paymentMethod(order.getPaymentMethod())
                 .orderDetails(order.getOrderDetails())
                 .build();
-        return orderResponse;
     }
 }

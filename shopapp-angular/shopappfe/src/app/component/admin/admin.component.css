@@ -32,7 +32,6 @@
 /* Custom CSS for active link */
 #sidebar a.active {
   font-weight: bold; /* Highlight active link */
-  background-color: #0056b3;
 }
 
 /* Change background color on hover */

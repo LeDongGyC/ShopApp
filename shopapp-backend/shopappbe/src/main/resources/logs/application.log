@@ -1,0 +1,42 @@
+2024-05-23 18:39:41.262 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+2024-05-23 18:39:41.297 [main] INFO  c.s.shopappbe.ShopappbeApplication - Starting ShopappbeApplication using Java 17.0.9 with PID 12380 (E:\Project\ShopApp\shopapp-backend\shopappbe\target\classes started by Acer in E:\Project\ShopApp\shopapp-backend\shopappbe)
+2024-05-23 18:39:41.298 [main] INFO  c.s.shopappbe.ShopappbeApplication - No active profile set, falling back to 1 default profile: "default"
+2024-05-23 18:39:41.824 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-05-23 18:39:41.885 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 54 ms. Found 7 JPA repository interfaces.
+2024-05-23 18:39:42.310 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8088 (http)
+2024-05-23 18:39:42.317 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2024-05-23 18:39:42.319 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2024-05-23 18:39:42.319 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.19]
+2024-05-23 18:39:42.386 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2024-05-23 18:39:42.386 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1051 ms
+2024-05-23 18:39:42.488 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-05-23 18:39:42.538 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.2.22.Final
+2024-05-23 18:39:42.541 [main] INFO  org.hibernate.cfg.Environment - HHH000406: Using bytecode reflection optimizer
+2024-05-23 18:39:42.758 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-05-23 18:39:42.779 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2024-05-23 18:39:42.919 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@46e388ec
+2024-05-23 18:39:42.920 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2024-05-23 18:39:43.726 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-05-23 18:39:43.728 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-05-23 18:39:43.991 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-05-23 18:39:44.036 [main] DEBUG o.s.s.a.p.PrePostAnnotationSecurityMetadataSource - @org.springframework.security.access.prepost.PreAuthorize("hasRole(\'ROLE_ADMIN\')") found on specific method: public org.springframework.http.ResponseEntity com.shopapp.shopappbe.controllers.CategoryController.updateCategory(java.lang.Long,com.shopapp.shopappbe.dtos.CategoryDTO)
+2024-05-23 18:39:44.053 [main] DEBUG o.s.s.a.m.DelegatingMethodSecurityMetadataSource - Caching method [CacheKey[com.shopapp.shopappbe.controllers.CategoryController; public org.springframework.http.ResponseEntity com.shopapp.shopappbe.controllers.CategoryController.updateCategory(java.lang.Long,com.shopapp.shopappbe.dtos.CategoryDTO)]] with attributes [[authorize: 'hasRole('ROLE_ADMIN')', filter: 'null', filterTarget: 'null']]
+2024-05-23 18:39:44.101 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2024-05-23 18:39:44.440 [main] DEBUG o.s.s.a.p.PrePostAnnotationSecurityMetadataSource - @org.springframework.security.access.prepost.PreAuthorize("hasRole(\'ROLE_ADMIN\')") found on specific method: public org.springframework.http.ResponseEntity com.shopapp.shopappbe.controllers.OrderController.getOrdersByKeyword(java.lang.String,int,int)
+2024-05-23 18:39:44.441 [main] DEBUG o.s.s.a.m.DelegatingMethodSecurityMetadataSource - Caching method [CacheKey[com.shopapp.shopappbe.controllers.OrderController; public org.springframework.http.ResponseEntity com.shopapp.shopappbe.controllers.OrderController.getOrdersByKeyword(java.lang.String,int,int)]] with attributes [[authorize: 'hasRole('ROLE_ADMIN')', filter: 'null', filterTarget: 'null']]
+2024-05-23 18:39:44.675 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7addc5e4, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1e27ed87, org.springframework.security.web.context.SecurityContextHolderFilter@bc007f5, org.springframework.security.web.header.HeaderWriterFilter@329f649d, org.springframework.web.filter.CorsFilter@2b811d1c, org.springframework.security.web.authentication.logout.LogoutFilter@6bbcb69f, com.shopapp.shopappbe.filters.JwtTokenFilter@33d2f9d3, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@40c65a03, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@105f875f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@36f8c95a, org.springframework.security.web.access.ExceptionTranslationFilter@4f549906, org.springframework.security.web.access.intercept.AuthorizationFilter@4037a204]
+2024-05-23 18:39:44.683 [main] WARN  o.s.s.c.a.web.builders.WebSecurity - 
+
+********************************************************************
+**********        Security debugging is enabled.       *************
+**********    This may include sensitive information.  *************
+**********      Do not use in a production system!     *************
+********************************************************************
+
+
+2024-05-23 18:39:44.857 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2024-05-23 18:39:44.871 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8088 (http) with context path ''
+2024-05-23 18:39:44.877 [main] INFO  c.s.shopappbe.ShopappbeApplication - Started ShopappbeApplication in 3.88 seconds (process running for 4.545)
+2024-05-23 18:53:22.441 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-05-23 18:53:22.442 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2024-05-23 18:53:22.449 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

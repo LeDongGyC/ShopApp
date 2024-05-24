@@ -10,9 +10,6 @@ import {AuthGuardFn} from "./guards/auth.guard";
 import {AdminComponent} from "./component/admin/admin.component";
 import {AdminGuardFn} from "./guards/admin.guard";
 
-//import { OrderAdminComponent } from './components/admin/order/order.admin.component';
-
-
 export const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
@@ -27,6 +24,6 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminComponent,
-    canActivate:[AdminGuardFn]
+    canActivate: [AdminGuardFn]
   },
 ];

@@ -41,7 +41,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.getCategories();
+    this.getCategories(0, 100);
     this.getProducts('', 0, this.currentPage, this.itemsPerPage);
   }
 
@@ -51,19 +51,21 @@ export class HomeComponent implements OnInit {
     this.getProducts(this.keyword, this.selectedCategoryId, this.currentPage, this.itemsPerPage);
   }
 
-  getCategories() {
-    this.categoryService.getCategories().subscribe({
-        next: (categories: Category[]) => {
-          this.categories = categories;
-        },
-        complete: () => {
-        },
-        error: (error: any) => {
-          console.error('Error fetching categories:', error);
-        }
+  getCategories(page: number, limit: number) {
+    this.categoryService.getCategories(page, limit).subscribe({
+      next: (categories: Category[]) => {
+        debugger;
+        this.categories = categories;
+      },
+      complete: () => {
+        debugger;
+      },
+      error: (error: any) => {
+        console.error('Error fetching categories:', error);
       }
-    );
+    });
   }
+
 
   getProducts(keyword: string, selectedCategoryId: number, page: number, limit: number) {
     this.productService.getProducts(keyword, selectedCategoryId, page, limit).subscribe({

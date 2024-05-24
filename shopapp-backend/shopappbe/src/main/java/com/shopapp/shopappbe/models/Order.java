@@ -31,7 +31,7 @@ public class Order {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, length = 100)
+    @Column(name = "phone_number",nullable = false, length = 100)
     private String phoneNumber;
 
     @Column(name = "address", length = 100)
@@ -40,14 +40,14 @@ public class Order {
     @Column(name = "note", length = 100)
     private String note;
 
-    @Column(name = "order_date")
-    private LocalDateTime orderDate;
+    @Column(name="order_date")
+    private LocalDate orderDate;
 
     @Column(name = "status")
     private String status;
 
     @Column(name = "total_money")
-    private Integer totalMoney;
+    private Float totalMoney;
 
     @Column(name = "shipping_method")
     private String shippingMethod;
@@ -65,11 +65,10 @@ public class Order {
     private String paymentMethod;
 
     @Column(name = "active")
-    private Boolean isActive;//thuộc về admin
+    private Boolean active;//thuộc về admin
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderDetail> orderDetails;
-
 }
 
