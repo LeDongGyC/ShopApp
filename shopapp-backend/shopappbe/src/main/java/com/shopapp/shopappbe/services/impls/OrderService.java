@@ -3,6 +3,8 @@ package com.shopapp.shopappbe.services.impls;
 
 import com.shopapp.shopappbe.dtos.CartItemDTO;
 import com.shopapp.shopappbe.dtos.OrderDTO;
+import com.shopapp.shopappbe.dtos.OrderDetailDTO;
+import com.shopapp.shopappbe.dtos.OrderWithDetailsDTO;
 import com.shopapp.shopappbe.exceptions.DataNotFoundException;
 import com.shopapp.shopappbe.models.*;
 import com.shopapp.shopappbe.repositories.OrderDetailRepository;
@@ -133,6 +135,27 @@ public class OrderService implements IOrderService {
     @Override
     public Page<Order> getOrdersByKeyword(String keyword, Pageable pageable) {
         return orderRepository.findByKeyword(keyword, pageable);
+    }
+    @Transactional
+    public Order updateOrderWithDetails(OrderWithDetailsDTO orderWithDetailsDTO) {
+        modelMapper.typeMap(OrderWithDetailsDTO.class, Order.class)
+                .addMappings(mapper -> mapper.skip(Order::setId));
+        Order order = new Order();
+        modelMapper.map(orderWithDetailsDTO, order);
+        Order savedOrder = orderRepository.save(order);
+
+        // Set the order for each order detail
+        for (OrderDetailDTO orderDetailDTO : orderWithDetailsDTO.getOrderDetailDTOS()) {
+            //orderDetail.setOrder(OrderDetail);
+        }
+
+        // Save or update the order details
+        List<OrderDetail> savedOrderDetails = orderDetailRepository.saveAll(order.getOrderDetails());
+
+        // Set the updated order details for the order
+        savedOrder.setOrderDetails(savedOrderDetails);
+
+        return savedOrder;
     }
 }
 

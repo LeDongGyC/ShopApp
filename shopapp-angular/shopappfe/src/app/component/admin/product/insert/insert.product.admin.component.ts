@@ -1,19 +1,19 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OnInit } from '@angular/core';
-import { InsertProductDTO } from '../../../../dtos/product/insert.product.dto';
-import { Category } from '../../../../models/category';
-import { CategoryService } from '../../../../services/category.service';
-import { ProductService } from '../../../../services/product.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {InsertProductDTO} from "../../../../dtos/product/insert-product-dto";
+import {Category} from "../../../../models/product/category";
+import {CategoryService} from "../../../../servies/category.service";
+import {ProductService} from "../../../../servies/product.service";
 
 @Component({
   selector: 'app-insert.product.admin',
   templateUrl: './insert.product.admin.component.html',
   styleUrls: ['./insert.product.admin.component.scss'],
   standalone: true,
-  imports: [   
+  imports: [
     CommonModule,
     FormsModule,
   ]
@@ -27,17 +27,17 @@ export class InsertProductAdminComponent implements OnInit {
     images: []
   };
   categories: Category[] = []; // Dữ liệu động từ categoryService
-  constructor(    
+  constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private categoryService: CategoryService,    
-    private productService: ProductService,    
+    private categoryService: CategoryService,
+    private productService: ProductService,
   ) {
-    
-  } 
+
+  }
   ngOnInit() {
     this.getCategories(1, 100)
-  } 
+  }
   getCategories(page: number, limit: number) {
     this.categoryService.getCategories(page, limit).subscribe({
       next: (categories: Category[]) => {
@@ -64,34 +64,34 @@ export class InsertProductAdminComponent implements OnInit {
     this.insertProductDTO.images = files;
   }
 
-  insertProduct() {    
-    this.productService.insertProduct(this.insertProductDTO).subscribe({
-      next: (response) => {
-        debugger
-        if (this.insertProductDTO.images.length > 0) {
-          const productId = response.id; // Assuming the response contains the newly created product's ID
-          this.productService.uploadImages(productId, this.insertProductDTO.images).subscribe({
-            next: (imageResponse) => {
-              debugger
-              // Handle the uploaded images response if needed              
-              console.log('Images uploaded successfully:', imageResponse);
-              // Navigate back to the previous page
-              this.router.navigate(['../'], { relativeTo: this.route });
-            },
-            error: (error) => {
-              // Handle the error while uploading images
-              alert(error.error)
-              console.error('Error uploading images:', error);
-            }
-          })          
-        }
-      },
-      error: (error) => {
-        debugger
-        // Handle error while inserting the product
-        alert(error.error)
-        console.error('Error inserting product:', error);
-      }
-    });    
+  insertProduct() {
+    // this.productService.insertProduct(this.insertProductDTO).subscribe({
+    //   next: (response) => {
+    //     debugger
+    //     if (this.insertProductDTO.images.length > 0) {
+    //       const productId = response.id; // Assuming the response contains the newly created product's ID
+    //       this.productService.uploadImages(productId, this.insertProductDTO.images).subscribe({
+    //         next: (imageResponse) => {
+    //           debugger
+    //           // Handle the uploaded images response if needed
+    //           console.log('Images uploaded successfully:', imageResponse);
+    //           // Navigate back to the previous page
+    //           this.router.navigate(['../'], { relativeTo: this.route });
+    //         },
+    //         error: (error) => {
+    //           // Handle the error while uploading images
+    //           alert(error.error)
+    //           console.error('Error uploading images:', error);
+    //         }
+    //       })
+    //     }
+    //   },
+    //   error: (error) => {
+    //     debugger
+    //     // Handle error while inserting the product
+    //     alert(error.error)
+    //     console.error('Error inserting product:', error);
+    //   }
+    // });
   }
 }

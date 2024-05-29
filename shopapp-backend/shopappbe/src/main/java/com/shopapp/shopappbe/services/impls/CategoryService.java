@@ -2,9 +2,12 @@ package com.shopapp.shopappbe.services.impls;
 
 import com.shopapp.shopappbe.dtos.CategoryDTO;
 import com.shopapp.shopappbe.models.Category;
+import com.shopapp.shopappbe.models.Product;
 import com.shopapp.shopappbe.repositories.CategoryRepository;
+import com.shopapp.shopappbe.repositories.ProductRepository;
 import com.shopapp.shopappbe.services.ICategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryService implements ICategoryService {
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Override
     @Transactional
@@ -48,9 +52,17 @@ public class CategoryService implements ICategoryService {
 
     @Override
     @Transactional
-    public void deleteCategory(long id) {
-        //xóa xong
-        categoryRepository.deleteById(id);
+    public Category deleteCategory(long id) throws ChangeSetPersister.NotFoundException {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ChangeSetPersister.NotFoundException());
+
+        List<Product> products = productRepository.findByCategory(category);
+        if (!products.isEmpty()) {
+            throw new IllegalStateException("Cannot delete category with associated products");
+        } else {
+            categoryRepository.deleteById(id);
+            return category;
+        }
     }
 }
 

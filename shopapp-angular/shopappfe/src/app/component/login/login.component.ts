@@ -115,15 +115,6 @@ export class LoginComponent implements OnInit{
             this.userResponse = {
               ...response,
               date_of_birth: new Date(response.date_of_birth),
-              // id: response.id,
-              // fullname: response.fullname,
-              // phone_number: response.phone_number,
-              // address: response.address,
-              // is_active: response.is_active,
-              // date_of_birth: new Date(response.date_of_birth),
-              // facebook_account_id: response.facebook_account_id,
-              // google_account_id: response.google_account_id,
-              // role: response.role,
             };
             this.userService.saveUserResponseToLocalStorage(this.userResponse);
             this.router.navigate(['/']).then(r => console.log('Navigate to home page'));

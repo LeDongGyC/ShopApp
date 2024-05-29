@@ -4,12 +4,15 @@ import com.shopapp.shopappbe.components.LocalizationUtils;
 import com.shopapp.shopappbe.dtos.UpdateUserDTO;
 import com.shopapp.shopappbe.dtos.UserDTO;
 import com.shopapp.shopappbe.dtos.UserLoginDTO;
+import com.shopapp.shopappbe.models.Token;
 import com.shopapp.shopappbe.models.User;
 import com.shopapp.shopappbe.responses.LoginResponse;
 import com.shopapp.shopappbe.responses.RegisterResponse;
 import com.shopapp.shopappbe.responses.UserResponse;
+import com.shopapp.shopappbe.services.ITokenService;
 import com.shopapp.shopappbe.services.IUserService;
 import com.shopapp.shopappbe.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,7 @@ import java.util.List;
 public class UserController {
     private final IUserService userService;
     private final LocalizationUtils localizationUtils;
+    private final ITokenService tokenService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> createUser(
@@ -59,13 +63,18 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody UserLoginDTO userLoginDTO
+            @Valid @RequestBody UserLoginDTO userLoginDTO,
+            HttpServletRequest request
     ) {
         // Kiểm tra thông tin đăng nhập và sinh token
         try {
-            String token = userService.login(userLoginDTO.getPhoneNumber(),
+            String token = userService.login(
+                    userLoginDTO.getPhoneNumber(),
                     userLoginDTO.getPassword(),
                     userLoginDTO.getRoleId() == null ? 1 : userLoginDTO.getRoleId());
+            String userAgent = request.getHeader("User-Agent");
+            User user = userService.getUserDetailsFromToken(token);
+            tokenService.addToken(user, token, isMobileDevice(userAgent));
             return ResponseEntity.ok(LoginResponse.builder()
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
                     .token(token)
@@ -75,6 +84,12 @@ public class UserController {
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
                     .build());
         }
+    }
+
+    private boolean isMobileDevice(String userAgent) {
+        // Kiểm tra User-Agent header để xác định thiết bị di động
+        // Ví dụ đơn giản:
+        return userAgent.toLowerCase().contains("mobile");
     }
 
     @PostMapping("/details")
@@ -108,4 +123,3 @@ public class UserController {
         }
     }
 }
-
