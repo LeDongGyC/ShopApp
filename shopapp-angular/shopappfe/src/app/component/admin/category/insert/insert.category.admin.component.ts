@@ -37,17 +37,17 @@ export class InsertCategoryAdminComponent implements OnInit {
   }
 
   insertCategory() {
-    // this.categoryService.insertCategory(this.insertCategoryDTO).subscribe({
-    //   next: (response) => {
-    //     debugger
-    //     this.router.navigate(['/admin/categories']);
-    //   },
-    //   error: (error) => {
-    //     debugger
-    //     // Handle error while inserting the category
-    //     alert(error.error)
-    //     console.error('Error inserting category:', error);
-    //   }
-    // });
+    this.categoryService.insertCategory(this.insertCategoryDTO).subscribe({
+      next: (response) => {
+        debugger
+        this.router.navigate(['/admin/categories']);
+      },
+      error: (error) => {
+        debugger
+        // Handle error while inserting the category
+        alert(error.error)
+        console.error('Error inserting category:', error);
+      }
+    });
   }
 }

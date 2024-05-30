@@ -3,6 +3,8 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Observable} from "rxjs";
 import {Category} from "../models/product/category";
+import {UpdateCategoryDto} from "../dtos/category/update-category-dto";
+import {InsertCategoryDto} from "../dtos/category/insert-category-dto";
 
 @Injectable({
   providedIn: 'root'
@@ -30,14 +32,14 @@ export class CategoryService {
     return this.http.delete<string>(`${this.apiBaseUrl}/categories/${id}`);
   }
 
-  // updateCategory(id: number, updatedCategory: UpdateCategoryDTO): Observable<UpdateCategoryDTO> {
-  //   return this.http.put<Category>(`${this.apiBaseUrl}/categories/${id}`, updatedCategory);
-  // }
-  //
-  // insertCategory(insertCategoryDTO: InsertCategoryDTO): Observable<any> {
-  //   // Add a new category
-  //   return this.http.post(`${this.apiBaseUrl}/categories`, insertCategoryDTO);
-  // }
+  updateCategory(id: number, updatedCategory: UpdateCategoryDto): Observable<UpdateCategoryDto> {
+    return this.http.put<Category>(`${this.apiBaseUrl}/categories/${id}`, updatedCategory);
+  }
+
+  insertCategory(insertCategoryDTO: InsertCategoryDto): Observable<any> {
+    // Add a new category
+    return this.http.post(`${this.apiBaseUrl}/categories`, insertCategoryDTO);
+  }
 
 
 }

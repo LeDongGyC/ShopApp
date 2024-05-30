@@ -7,8 +7,10 @@ import com.shopapp.shopappbe.dtos.UserDTO;
 import com.shopapp.shopappbe.exceptions.DataNotFoundException;
 import com.shopapp.shopappbe.exceptions.PermissionDenyException;
 import com.shopapp.shopappbe.models.Role;
+import com.shopapp.shopappbe.models.Token;
 import com.shopapp.shopappbe.models.User;
 import com.shopapp.shopappbe.repositories.RoleRepository;
+import com.shopapp.shopappbe.repositories.TokenRepository;
 import com.shopapp.shopappbe.repositories.UserRepository;
 import com.shopapp.shopappbe.services.IUserService;
 import com.shopapp.shopappbe.utils.MessageKeys;
@@ -28,6 +30,7 @@ import java.util.Optional;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
@@ -152,5 +155,11 @@ public class UserService implements IUserService {
         //existingUser.setRole(updatedRole);
         // Save the updated user
         return userRepository.save(existingUser);
+    }
+
+    @Override
+    public User getUserDetailsFromRefreshToken(String refreshToken) throws Exception {
+        Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
+        return getUserDetailsFromToken(existingToken.getToken());
     }
 }

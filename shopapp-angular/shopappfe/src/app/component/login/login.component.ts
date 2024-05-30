@@ -9,8 +9,9 @@ import {FormsModule, NgForm} from "@angular/forms";
 import {FooterComponent} from "../footer/footer.component";
 import {HeaderComponent} from "../header/header.component";
 import {CommonModule} from "@angular/common";
-import {LoginDto} from "../../dtos/user/login-dto";
 import {UserResponse} from "../../responses/user/user.response";
+import {CartService} from "../../servies/cart.service";
+import {LoginDto} from "../../dtos/user/login-dto";
 
 @Component({
   selector: 'app-login',
@@ -24,10 +25,10 @@ import {UserResponse} from "../../responses/user/user.response";
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent implements OnInit{
+export class LoginComponent implements OnInit {
   @ViewChild('loginForm') loginForm!: NgForm;
-  phoneNumber = '0337355842';
-  password = '123456';
+  phoneNumber = '';
+  password = '';
   showPassword: boolean = false;
 
   roles: Role[] = []; // Mảng roles
@@ -46,7 +47,7 @@ export class LoginComponent implements OnInit{
     private userService: UserService,
     private tokenService: TokenService,
     private roleService: RoleService,
-    // private cartService: CartService
+    private cartService: CartService
   ) {
   }
 
@@ -70,9 +71,6 @@ export class LoginComponent implements OnInit{
   }
 
   login() {
-    const message = `phone: ${this.phoneNumber}` +
-      `password: ${this.password}`;
-
     const loginDTO: LoginDto = {
       phone_number: this.phoneNumber,
       password: this.password,
@@ -84,6 +82,7 @@ export class LoginComponent implements OnInit{
         const {token} = response;
         if (this.rememberMe) {
           this.tokenService.setToken(token);
+          debugger;
           this.userService.getUserDetail(token).subscribe({
             next: (response: any) => {
               debugger
@@ -93,14 +92,14 @@ export class LoginComponent implements OnInit{
               };
               this.userService.saveUserResponseToLocalStorage(this.userResponse);
               if (this.userResponse?.role.name == 'admin') {
-                this.router.navigate(['/admin']).then(r => console.log('Navigate to admin page'));
+                this.router.navigate(['/admin']);
               } else if (this.userResponse?.role.name == 'user') {
-                this.router.navigate(['/']).then(r => console.log('Navigate to home page'));
+                this.router.navigate(['/']);
               }
 
             },
             complete: () => {
-              // this.cartService.refreshCart();
+              this.cartService.refreshCart();
               debugger;
             },
             error: (error: any) => {
@@ -109,24 +108,6 @@ export class LoginComponent implements OnInit{
             }
           })
         }
-        this.userService.getUserDetail(token).subscribe({
-          next: (response: any) => {
-            debugger
-            this.userResponse = {
-              ...response,
-              date_of_birth: new Date(response.date_of_birth),
-            };
-            this.userService.saveUserResponseToLocalStorage(this.userResponse);
-            this.router.navigate(['/']).then(r => console.log('Navigate to home page'));
-          },
-          complete: () => {
-            debugger;
-          },
-          error: (error: any) => {
-            debugger;
-            alert(error.error.message);
-          }
-        });
       },
       complete: () => {
         debugger;
@@ -137,6 +118,7 @@ export class LoginComponent implements OnInit{
       }
     });
   }
+
 
   togglePassword() {
     this.showPassword = !this.showPassword;

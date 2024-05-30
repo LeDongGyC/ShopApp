@@ -71,9 +71,8 @@ export class OrderComponent implements OnInit{
   ngOnInit(): void {
     debugger
     //this.cartService.clearCart();
-    // this.orderData.user_id = this.tokenService.getUserId();
+    this.orderData.user_id = this.tokenService.getUserId();
     // Lấy danh sách sản phẩm từ giỏ hàng
-    debugger
     this.cart = this.cartService.getCart();
     const productIds = Array.from(this.cart.keys()); // Chuyển danh sách ID từ Map giỏ hàng
 
@@ -97,7 +96,6 @@ export class OrderComponent implements OnInit{
             quantity: this.cart.get(productId)!
           };
         });
-        console.log('haha');
       },
       complete: () => {
         debugger;

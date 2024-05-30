@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 import {Category} from "../../../../models/product/category";
 import {CategoryService} from "../../../../servies/category.service";
 import {UpdateCategoryDto} from "../../../../dtos/category/update-category-dto";
@@ -25,7 +25,6 @@ export class UpdateCategoryAdminComponent implements OnInit {
     private categoryService: CategoryService,
     private route: ActivatedRoute,
     private router: Router,
-
   ) {
     this.categoryId = 0;
     this.updatedCategory = {} as Category;
@@ -43,7 +42,7 @@ export class UpdateCategoryAdminComponent implements OnInit {
   getCategoryDetails(): void {
     this.categoryService.getDetailCategory(this.categoryId).subscribe({
       next: (category: Category) => {
-        this.updatedCategory = { ...category };
+        this.updatedCategory = {...category};
       },
       complete: () => {
 
@@ -53,23 +52,24 @@ export class UpdateCategoryAdminComponent implements OnInit {
       }
     });
   }
-   updateCategory() {
-  //   // Implement your update logic here
-  //   const updateCategoryDTO: UpdateCategoryDto = {
-  //     name: this.updatedCategory.name,
-  //   };
-  //   this.categoryService.updateCategory(this.updatedCategory.id, updateCategoryDTO).subscribe({
-  //     next: (response: any) => {
-  //       debugger
-  //     },
-  //     complete: () => {
-  //       debugger;
-  //       this.router.navigate(['/admin/categories']);
-  //     },
-  //     error: (error: any) => {
-  //       debugger;
-  //       console.error('Error fetching categorys:', error);
-  //     }
-  //   });
-   }
+
+  updateCategory() {
+    // Implement your update logic here
+    const updateCategoryDTO: UpdateCategoryDto = {
+      name: this.updatedCategory.name,
+    };
+    this.categoryService.updateCategory(this.updatedCategory.id, updateCategoryDTO).subscribe({
+      next: (response: any) => {
+        debugger
+      },
+      complete: () => {
+        debugger;
+        this.router.navigate(['/admin/categories']);
+      },
+      error: (error: any) => {
+        debugger;
+        console.error('Error fetching categorys:', error);
+      }
+    });
+  }
 }

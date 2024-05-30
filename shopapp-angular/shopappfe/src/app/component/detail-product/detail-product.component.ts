@@ -25,6 +25,7 @@ export class DetailProductComponent implements OnInit {
   productId = 0;
   currentImageIndex = 0;
   quantity = 1;
+  isPressedAddToCart: boolean = false;
 
   constructor(private productService: ProductService,
               private activatedRoute: ActivatedRoute,
@@ -43,7 +44,9 @@ export class DetailProductComponent implements OnInit {
         next: (response: any) => {
           if (response.product_images && response.product_images.length > 0) {
             response.product_images.forEach((product_image: ProductImage) => {
-              product_image.image_url = `${environment.apiBaseUrl}/products/images/${product_image.image_url}`;
+              product_image.image_url = product_image.image_url.startsWith('http')
+                ? product_image.image_url
+                : `${environment.apiBaseUrl}/products/images/${product_image.image_url}`;
             });
           }
           this.product = response;
@@ -88,6 +91,7 @@ export class DetailProductComponent implements OnInit {
   }
 
   addToCart(): void {
+    this.isPressedAddToCart = true;
     if (this.product) {
       this.cartService.addToCart(this.product.id, this.quantity);
       alert('Đã thêm sản phẩm vào giỏ hàng.')
@@ -107,8 +111,19 @@ export class DetailProductComponent implements OnInit {
     }
   }
 
+  getTotalPrice(): number {
+    if (this.product) {
+      return this.product.price * this.quantity;
+    }
+    return 0;
+  }
+
   buyNow(): void {
+    if (!this.isPressedAddToCart) {
+      this.addToCart();
+    }
     this.router.navigate(['/orders']);
   }
+
 
 }

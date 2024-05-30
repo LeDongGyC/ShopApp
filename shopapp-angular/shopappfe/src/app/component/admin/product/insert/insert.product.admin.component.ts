@@ -65,33 +65,33 @@ export class InsertProductAdminComponent implements OnInit {
   }
 
   insertProduct() {
-    // this.productService.insertProduct(this.insertProductDTO).subscribe({
-    //   next: (response) => {
-    //     debugger
-    //     if (this.insertProductDTO.images.length > 0) {
-    //       const productId = response.id; // Assuming the response contains the newly created product's ID
-    //       this.productService.uploadImages(productId, this.insertProductDTO.images).subscribe({
-    //         next: (imageResponse) => {
-    //           debugger
-    //           // Handle the uploaded images response if needed
-    //           console.log('Images uploaded successfully:', imageResponse);
-    //           // Navigate back to the previous page
-    //           this.router.navigate(['../'], { relativeTo: this.route });
-    //         },
-    //         error: (error) => {
-    //           // Handle the error while uploading images
-    //           alert(error.error)
-    //           console.error('Error uploading images:', error);
-    //         }
-    //       })
-    //     }
-    //   },
-    //   error: (error) => {
-    //     debugger
-    //     // Handle error while inserting the product
-    //     alert(error.error)
-    //     console.error('Error inserting product:', error);
-    //   }
-    // });
+    this.productService.insertProduct(this.insertProductDTO).subscribe({
+      next: (response) => {
+        debugger
+        if (this.insertProductDTO.images.length > 0) {
+          const productId = response.id; // Assuming the response contains the newly created product's ID
+          this.productService.uploadImages(productId, this.insertProductDTO.images).subscribe({
+            next: (imageResponse) => {
+              debugger
+              // Handle the uploaded images response if needed
+              console.log('Images uploaded successfully:', imageResponse);
+              // Navigate back to the previous page
+              this.router.navigate(['../'], { relativeTo: this.route });
+            },
+            error: (error) => {
+              // Handle the error while uploading images
+              alert(error.error)
+              console.error('Error uploading images:', error);
+            }
+          })
+        }
+      },
+      error: (error) => {
+        debugger
+        // Handle error while inserting the product
+        alert(error.error)
+        console.error('Error inserting product:', error);
+      }
+    });
   }
 }

@@ -27,6 +27,8 @@ public class JwtTokenUtils {
     private int expiration;
     @Value("${jwt.secretKey}")
     private String secretKey;
+    @Value("${jwt.expiration-refresh-token}")
+    private int expirationRefreshToken;
     private final TokenRepository tokenRepository;
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenUtils.class);
 

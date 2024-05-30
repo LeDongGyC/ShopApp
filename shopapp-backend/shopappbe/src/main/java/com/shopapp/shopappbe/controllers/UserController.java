@@ -1,6 +1,7 @@
 package com.shopapp.shopappbe.controllers;
 
 import com.shopapp.shopappbe.components.LocalizationUtils;
+import com.shopapp.shopappbe.dtos.RefreshTokenDTO;
 import com.shopapp.shopappbe.dtos.UpdateUserDTO;
 import com.shopapp.shopappbe.dtos.UserDTO;
 import com.shopapp.shopappbe.dtos.UserLoginDTO;
@@ -71,18 +72,53 @@ public class UserController {
             String token = userService.login(
                     userLoginDTO.getPhoneNumber(),
                     userLoginDTO.getPassword(),
-                    userLoginDTO.getRoleId() == null ? 1 : userLoginDTO.getRoleId());
+                    userLoginDTO.getRoleId() == null ? 1 : userLoginDTO.getRoleId()
+            );
             String userAgent = request.getHeader("User-Agent");
-            User user = userService.getUserDetailsFromToken(token);
-            tokenService.addToken(user, token, isMobileDevice(userAgent));
+            User userDetail = userService.getUserDetailsFromToken(token);
+            Token jwtToken = tokenService.addToken(userDetail, token, isMobileDevice(userAgent));
+
+            // Trả về token trong response
             return ResponseEntity.ok(LoginResponse.builder()
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
-                    .token(token)
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(userDetail.getUsername())
+                    .roles(userDetail.getAuthorities().stream().map(item -> item.getAuthority()).toList())
+                    .id(userDetail.getId())
                     .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(LoginResponse.builder()
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
+            return ResponseEntity.badRequest().body(
+                    LoginResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
+                            .build()
+            );
+        }
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<LoginResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenDTO refreshTokenDTO
+    ) {
+        try {
+            User userDetail = userService.getUserDetailsFromRefreshToken(refreshTokenDTO.getRefreshToken());
+            Token jwtToken = tokenService.refreshToken(refreshTokenDTO.getRefreshToken(), userDetail);
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .message("Refresh token successfully")
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(userDetail.getUsername())
+                    .roles(userDetail.getAuthorities().stream().map(item -> item.getAuthority()).toList())
+                    .id(userDetail.getId())
                     .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    LoginResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
+                            .build()
+            );
         }
     }
 
