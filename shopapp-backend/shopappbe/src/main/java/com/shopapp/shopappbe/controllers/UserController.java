@@ -1,28 +1,30 @@
 package com.shopapp.shopappbe.controllers;
 
 import com.shopapp.shopappbe.components.LocalizationUtils;
-import com.shopapp.shopappbe.dtos.RefreshTokenDTO;
-import com.shopapp.shopappbe.dtos.UpdateUserDTO;
-import com.shopapp.shopappbe.dtos.UserDTO;
-import com.shopapp.shopappbe.dtos.UserLoginDTO;
+import com.shopapp.shopappbe.dtos.*;
+import com.shopapp.shopappbe.exceptions.DataNotFoundException;
+import com.shopapp.shopappbe.exceptions.InvalidPasswordException;
 import com.shopapp.shopappbe.models.Token;
 import com.shopapp.shopappbe.models.User;
-import com.shopapp.shopappbe.responses.LoginResponse;
-import com.shopapp.shopappbe.responses.RegisterResponse;
-import com.shopapp.shopappbe.responses.UserResponse;
+import com.shopapp.shopappbe.responses.*;
 import com.shopapp.shopappbe.services.ITokenService;
 import com.shopapp.shopappbe.services.IUserService;
 import com.shopapp.shopappbe.utils.MessageKeys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("${api.prefix}/users")
@@ -31,6 +33,36 @@ public class UserController {
     private final IUserService userService;
     private final LocalizationUtils localizationUtils;
     private final ITokenService tokenService;
+
+    @GetMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getAllUser(
+            @RequestParam(defaultValue = "", required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        try {
+            // Tạo Pageable từ thông tin trang và giới hạn
+            PageRequest pageRequest = PageRequest.of(
+                    page, limit,
+                    //Sort.by("createdAt").descending()
+                    Sort.by("id").ascending()
+            );
+            Page<UserResponse> userPage = userService.findAll(keyword, pageRequest)
+                    .map(UserResponse::fromUser);
+
+            // Lấy tổng số trang
+            int totalPages = userPage.getTotalPages();
+            List<UserResponse> userResponses = userPage.getContent();
+            return ResponseEntity.ok(UserListResponse
+                    .builder()
+                    .users(userResponses)
+                    .totalPages(totalPages)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> createUser(
@@ -67,12 +99,12 @@ public class UserController {
             @Valid @RequestBody UserLoginDTO userLoginDTO,
             HttpServletRequest request
     ) {
-        // Kiểm tra thông tin đăng nhập và sinh token
+        int idRole = userService.selectRoleIdByPhoneNumber(userLoginDTO.getPhoneNumber());
         try {
             String token = userService.login(
                     userLoginDTO.getPhoneNumber(),
                     userLoginDTO.getPassword(),
-                    userLoginDTO.getRoleId() == null ? 1 : userLoginDTO.getRoleId()
+                    (long) idRole
             );
             String userAgent = request.getHeader("User-Agent");
             User userDetail = userService.getUserDetailsFromToken(token);
@@ -94,6 +126,18 @@ public class UserController {
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
                             .build()
             );
+        }
+    }
+
+    @PostMapping("/idrole")
+    public ResponseEntity<?> selectRoleIdByPhoneNumber(
+            @Valid @RequestBody PhoneNumberDTO PhoneNumberDTO
+    ) {
+        try {
+            int id = userService.selectRoleIdByPhoneNumber(PhoneNumberDTO.getPhoneNumber());
+            return ResponseEntity.ok(PhoneNumberResponse.builder().id(id).build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(-1);
         }
     }
 
@@ -156,6 +200,39 @@ public class UserController {
             return ResponseEntity.ok(UserResponse.fromUser(updatedUser));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/reset-password/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> resetPassword(@Valid @PathVariable long userId) {
+        try {
+            String newPassword = UUID.randomUUID().toString().substring(0, 5); // Tạo mật khẩu mới
+            userService.resetPassword(userId, newPassword);
+            return ResponseEntity.ok(newPassword);
+        } catch (InvalidPasswordException e) {
+            return ResponseEntity.badRequest().body("Invalid password");
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body("User not found");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/block/{userId}/{active}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> blockOrEnable(
+            @Valid @PathVariable long userId,
+            @Valid @PathVariable int active
+    ) {
+        try {
+            userService.blockOrEnable(userId, active > 0);
+            String message = active > 0 ? "Successfully enabled the user." : "Successfully blocked the user.";
+            return ResponseEntity.ok().body(message);
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body("User not found.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

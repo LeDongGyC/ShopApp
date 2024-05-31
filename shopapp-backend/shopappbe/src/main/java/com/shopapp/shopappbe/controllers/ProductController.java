@@ -161,13 +161,34 @@ public class ProductController {
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "id_asc") String sort
     ) {
         // Tạo Pageable từ thông tin trang và giới hạn
-        PageRequest pageRequest = PageRequest.of(
-                page, limit,
-//                Sort.by("createdAt").descending());
-                Sort.by("id").ascending());
+        Sort sortOption;
+        switch (sort) {
+            case "price_asc":
+                sortOption = Sort.by("price").ascending();
+                break;
+            case "price_desc":
+                sortOption = Sort.by("price").descending();
+                break;
+            case "name_asc":
+                sortOption = Sort.by("name").ascending();
+                break;
+            case "name_desc":
+                sortOption = Sort.by("name").descending();
+                break;
+            default:
+                sortOption = Sort.by("id").ascending();
+                break;
+        }
+
+//        PageRequest pageRequest = PageRequest.of(
+//                page, limit,
+////                Sort.by("createdAt").descending());
+//                Sort.by("id").ascending());
+        PageRequest pageRequest = PageRequest.of(page, limit, sortOption);
         logger.info(String.format("keyword: %s, categoryId: %d, page: %d, limit: %d", keyword, categoryId, page, limit));
         Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest);
         // Lấy tổng số trang
@@ -259,6 +280,5 @@ public class ProductController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 }
 

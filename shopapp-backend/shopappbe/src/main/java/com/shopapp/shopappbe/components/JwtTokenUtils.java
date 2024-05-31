@@ -89,7 +89,7 @@ public class JwtTokenUtils {
             String phoneNumber = extractPhoneNumber(token);
             Token existingToken = tokenRepository.findByToken(token);
             if (existingToken == null ||
-                    existingToken.isRevoked() == true ||
+                    existingToken.isRevoked() ||
                     !userDetails.isActive()
             ) {
                 return false;

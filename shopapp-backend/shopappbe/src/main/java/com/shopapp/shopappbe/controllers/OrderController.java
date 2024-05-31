@@ -51,6 +51,7 @@ public class OrderController {
 
     @GetMapping("/user/{user_id}") // Thêm biến đường dẫn "user_id"
     //GET http://localhost:8088/api/v1/orders/user/4
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
         try {
             List<Order> orders = orderService.findByUserId(userId);

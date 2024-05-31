@@ -72,6 +72,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/roles", apiPrefix), "GET"),
                 Pair.of(String.format("%s/products", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories", apiPrefix), "GET"),
+                Pair.of(String.format("%s/orders-detail", apiPrefix), "GET"),
+                Pair.of(String.format("%s/comments", apiPrefix), "GET"),
+                Pair.of(String.format("%s/coupons", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/login", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/refreshToken", apiPrefix), "POST")
@@ -94,4 +97,5 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         return false;
     }
+
 }

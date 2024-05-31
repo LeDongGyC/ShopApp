@@ -18,12 +18,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
     private final UserRepository userRepository;
 
-    // user's detail object
+    //user's detail object
     @Bean
     public UserDetailsService userDetailsService() {
         return phoneNumber -> userRepository
                 .findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new UsernameNotFoundException("Cannot find user with phone number " + phoneNumber));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                "Cannot find user with phone number = " + phoneNumber));
     }
 
     @Bean
@@ -33,10 +35,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
