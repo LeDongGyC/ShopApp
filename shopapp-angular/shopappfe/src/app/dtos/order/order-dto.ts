@@ -1,16 +1,28 @@
 export class OrderDTO {
   user_id: number;
+
   fullname: string;
+
   email: string;
+
   phone_number: string;
+
   address: string;
+
   status: string;
+
   note: string;
+
   total_money?: number;
+
   shipping_method: string;
+
   order_date?: Date;
+
   payment_method: string;
+
   coupon_code: string;
+
   cart_items: { product_id: number, quantity: number }[]; // Thêm cart_items để lưu thông tin giỏ hàng
 
   constructor(data: any) {

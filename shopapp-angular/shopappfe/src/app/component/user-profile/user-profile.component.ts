@@ -1,8 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {FooterComponent} from "../footer/footer.component";
-import {HeaderComponent} from "../header/header.component";
-import {CommonModule} from "@angular/common";
-
 import {
   AbstractControl,
   FormBuilder,
@@ -12,15 +8,24 @@ import {
   ValidationErrors,
   ValidatorFn,
   Validators
-} from "@angular/forms";
-import {UserResponse} from "../../responses/user/user.response";
-import {ActivatedRoute, Router} from "@angular/router";
+} from '@angular/forms';
+
+import {ActivatedRoute, Router} from '@angular/router';
+import {UserResponse} from '../../responses/user/user.response';
+
+
+import {HeaderComponent} from '../header/header.component';
+import {FooterComponent} from '../footer/footer.component';
+import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {UserService} from "../../servies/user.service";
 import {TokenService} from "../../servies/token.service";
 import {UpdateUserDTO} from "../../dtos/user/update-user-dto";
 
 @Component({
-  selector: 'app-user-profile',
+  selector: 'user-profile',
+  templateUrl: 'user-profile.component.html',
+  styleUrls: ['user-profile.component.scss'],
   standalone: true,
   imports: [
     FooterComponent,
@@ -29,8 +34,6 @@ import {UpdateUserDTO} from "../../dtos/user/update-user-dto";
     FormsModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './user-profile.component.html',
-  styleUrl: './user-profile.component.scss'
 })
 export class UserProfileComponent implements OnInit {
   userResponse?: UserResponse;
@@ -75,9 +78,9 @@ export class UserProfileComponent implements OnInit {
       complete: () => {
         debugger;
       },
-      error: (error: any) => {
+      error: (error: HttpErrorResponse) => {
         debugger;
-        alert(error.error.message);
+        console.error(error?.error?.message ?? '');
       }
     })
   }
@@ -112,16 +115,16 @@ export class UserProfileComponent implements OnInit {
             this.tokenService.removeToken();
             this.router.navigate(['/login']);
           },
-          error: (error: any) => {
-            alert(error.error.message);
+          error: (error: HttpErrorResponse) => {
+            debugger;
+            console.error(error?.error?.message ?? '');
           }
         });
     } else {
       if (this.userProfileForm.hasError('passwordMismatch')) {
-        alert('Mật khẩu và mật khẩu gõ lại chưa chính xác')
+        console.error('Mật khẩu và mật khẩu gõ lại chưa chính xác')
       }
     }
   }
 }
-
 

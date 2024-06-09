@@ -10,6 +10,8 @@ import {CategoryService} from "../../servies/category.service";
 import {Router} from "@angular/router";
 import {environment} from "../../../environments/environment";
 import {CartService} from "../../servies/cart.service";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ApiResponse} from "../../responses/user.response";
 
 @Component({
   selector: 'app-home',
@@ -20,7 +22,7 @@ import {CartService} from "../../servies/cart.service";
     HeaderComponent,
     FooterComponent
   ],
-  templateUrl: './home.component.html',
+  templateUrl: 'home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
@@ -33,6 +35,7 @@ export class HomeComponent implements OnInit {
   totalPages = 0;
   visiblePages: number[] = [];
   keyword = '';
+  sort = 'default'
 
   constructor(private productService: ProductService,
               private cartService: CartService,
@@ -42,39 +45,42 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.getCategories(0, 100);
-    this.getProducts('', 0, this.currentPage, this.itemsPerPage);
+    this.getProducts('', 0, this.currentPage, this.itemsPerPage, this.sort);
   }
 
   searchProducts() {
     this.currentPage = 0;
     this.itemsPerPage = 12;
-    this.getProducts(this.keyword, this.selectedCategoryId, this.currentPage, this.itemsPerPage);
+    this.getProducts(this.keyword, this.selectedCategoryId, this.currentPage, this.itemsPerPage, this.sort);
   }
 
   getCategories(page: number, limit: number) {
     this.categoryService.getCategories(page, limit).subscribe({
-      next: (categories: Category[]) => {
+      next: (apiResponse: ApiResponse) => {
         debugger;
-        this.categories = categories;
+        this.categories = apiResponse.data;
       },
       complete: () => {
         debugger;
       },
-      error: (error: any) => {
-        console.error('Error fetching categories:', error);
+      error: (error: HttpErrorResponse) => {
+        debugger;
+        console.error(error?.error?.message ?? '');
       }
     });
   }
 
 
-  getProducts(keyword: string, selectedCategoryId: number, page: number, limit: number) {
-    this.productService.getProducts(keyword, selectedCategoryId, page, limit).subscribe({
+  getProducts(keyword: string, selectedCategoryId: number, page: number, limit: number, sort: string) {
+    this.productService.getProducts(keyword, selectedCategoryId, page, limit, sort).subscribe({
       next: (response: any) => {
-        response.products.forEach((product: Product) => {
+        debugger;
+        response.data.products.forEach((product: Product) => {
           product.url = `${environment.apiBaseUrl}/products/images/${product.thumbnail}`;
         });
-        this.products = response.products;
-        this.totalPages = response.totalPages;
+        debugger;
+        this.products = response.data.products;
+        this.totalPages = response.data.totalPages;
         this.visiblePages = this.generateVisiblePageArray(this.currentPage, this.totalPages);
       },
       complete: () => {
@@ -87,7 +93,7 @@ export class HomeComponent implements OnInit {
 
   onPageChange(page: number) {
     this.currentPage = page;
-    this.getProducts(this.keyword, this.selectedCategoryId, this.currentPage, this.itemsPerPage);
+    this.getProducts(this.keyword, this.selectedCategoryId, this.currentPage, this.itemsPerPage, this.sort);
   }
 
   generateVisiblePageArray(currentPage: number, totalPages: number): number[] {

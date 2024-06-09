@@ -68,10 +68,42 @@ td {
 }
 
 .btn-gradient {
-  background: linear-gradient(to right, rgb(225, 64, 180), rgb(127, 68, 255));
+  background: linear-gradient(to right, rgb(233, 66, 178), rgb(127, 68, 255));
   color: white;
   border-radius: 30px;
   width: 200px;
+}
+
+.border-wrapper {
+  border: 1px solid white;
+}
+
+.product-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.product-quantity button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.product-quantity input {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  width: 40px;
+  margin: 0 10px;
+}
+
+.product-quantity input:focus {
+  outline: none;
 }
 
 /*# sourceMappingURL=order.component.css.map */

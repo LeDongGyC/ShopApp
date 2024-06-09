@@ -1,20 +1,18 @@
 import {Inject, Injectable} from '@angular/core';
-import {ProductService} from "./product.service";
-import {DOCUMENT} from "@angular/common";
+import {DOCUMENT} from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class CartService {
-  private cart: Map<number, number> = new Map();// Dùng Map để lưu trữ giỏ hàng, key là id sản phẩm, value là số lượng
+  private cart: Map<number, number> = new Map<number, number>(); // Dùng Map để lưu trữ giỏ hàng, key là id sản phẩm, value là số lượng
   localStorage?: Storage;
 
-  constructor(private productService: ProductService,
-              @Inject(DOCUMENT) private document: Document) {
-    // Lấy dữ liệu giỏ hàng từ localStorage khi khởi tạo service
+  constructor(@Inject(DOCUMENT) private document: Document) {
     this.localStorage = document.defaultView?.localStorage;
     // Lấy dữ liệu giỏ hàng từ localStorage khi khởi tạo service
-    this.refreshCart();
+    this.refreshCart()
   }
 
   public refreshCart() {
@@ -26,7 +24,16 @@ export class CartService {
     }
   }
 
+  private getCartKey(): string {
+    const userResponseJSON = this.localStorage?.getItem('user');
+    const userResponse = JSON.parse(userResponseJSON!);
+    debugger
+    return `cart:${userResponse?.id ?? ''}`;
+
+  }
+
   addToCart(productId: number, quantity: number = 1): void {
+    debugger
     if (this.cart.has(productId)) {
       // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng lên `quantity`
       this.cart.set(productId, this.cart.get(productId)! + quantity);
@@ -44,14 +51,8 @@ export class CartService {
 
   // Lưu trữ giỏ hàng vào localStorage
   private saveCartToLocalStorage(): void {
+    debugger
     this.localStorage?.setItem(this.getCartKey(), JSON.stringify(Array.from(this.cart.entries())));
-  }
-
-  private getCartKey(): string {
-    const userResponseJSON = this.localStorage?.getItem('user');
-    const userResponse = JSON.parse(userResponseJSON!);
-    return `cart:${userResponse?.id ?? ''}`;
-
   }
 
   setCart(cart: Map<number, number>) {
@@ -64,5 +65,4 @@ export class CartService {
     this.cart.clear(); // Xóa toàn bộ dữ liệu trong giỏ hàng
     this.saveCartToLocalStorage(); // Lưu giỏ hàng mới vào Local Storage (trống)
   }
-
 }

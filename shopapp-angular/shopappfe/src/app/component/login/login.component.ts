@@ -4,7 +4,6 @@ import {UserService} from "../../servies/user.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {TokenService} from "../../servies/token.service";
 import {RoleService} from "../../servies/role.service";
-import {LoginResponse} from "../../responses/user/login-response";
 import {FormsModule, NgForm} from "@angular/forms";
 import {FooterComponent} from "../footer/footer.component";
 import {HeaderComponent} from "../header/header.component";
@@ -12,6 +11,8 @@ import {CommonModule} from "@angular/common";
 import {UserResponse} from "../../responses/user/user.response";
 import {CartService} from "../../servies/cart.service";
 import {LoginDto} from "../../dtos/user/login-dto";
+import {ApiResponse} from "../../responses/user.response";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-login',
@@ -53,47 +54,50 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     // Gọi API lấy danh sách roles và lưu vào biến roles
-    debugger
     this.roleService.getRoles().subscribe({
-      next: (roles: Role[]) => { // Sử dụng kiểu Role[]
+      next: (apiResponse: ApiResponse) => { // Sử dụng kiểu Role[]
         debugger
+        const roles = apiResponse.data
         this.roles = roles;
         this.selectedRole = roles.length > 0 ? roles[0] : undefined;
       },
       complete: () => {
         debugger
       },
-      error: (error: any) => {
-        debugger
-        console.error('Error getting roles:', error);
+      error: (error: HttpErrorResponse) => {
+        debugger;
+        console.error(error?.error?.message ?? '');
       }
     });
   }
-
+  createAccount() {
+    debugger
+    // Chuyển hướng người dùng đến trang đăng ký (hoặc trang tạo tài khoản)
+    this.router.navigate(['/register']);
+  }
   login() {
     const loginDTO: LoginDto = {
       phone_number: this.phoneNumber,
-      password: this.password,
-      role_id: this.selectedRole?.id ?? 1
+      password: this.password
     };
     this.userService.login(loginDTO).subscribe({
-      next: (response: LoginResponse) => {
+      next: (apiResponse: ApiResponse) => {
         debugger;
-        const {token} = response;
+        const { token } = apiResponse.data;
         if (this.rememberMe) {
           this.tokenService.setToken(token);
           debugger;
           this.userService.getUserDetail(token).subscribe({
-            next: (response: any) => {
+            next: (apiResponse2: ApiResponse) => {
               debugger
               this.userResponse = {
-                ...response,
-                date_of_birth: new Date(response.date_of_birth),
+                ...apiResponse2.data,
+                date_of_birth: new Date(apiResponse2.data.date_of_birth),
               };
               this.userService.saveUserResponseToLocalStorage(this.userResponse);
-              if (this.userResponse?.role.name == 'admin') {
+              if(this.userResponse?.role.name == 'admin') {
                 this.router.navigate(['/admin']);
-              } else if (this.userResponse?.role.name == 'user') {
+              } else if(this.userResponse?.role.name == 'user') {
                 this.router.navigate(['/']);
               }
 
@@ -102,9 +106,9 @@ export class LoginComponent implements OnInit {
               this.cartService.refreshCart();
               debugger;
             },
-            error: (error: any) => {
+            error: (error: HttpErrorResponse) => {
               debugger;
-              alert(error.error.message);
+              console.error(error?.error?.message ?? '');
             }
           })
         }
@@ -112,20 +116,14 @@ export class LoginComponent implements OnInit {
       complete: () => {
         debugger;
       },
-      error: (error: any) => {
+      error: (error: HttpErrorResponse) => {
         debugger;
-        alert(error.error.message);
+        console.error(error?.error?.message ?? '');
       }
     });
   }
-
-
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
-
-  createAccount() {
-    debugger
-    this.router.navigate(['/register']);
-  }
 }
+

@@ -64,7 +64,7 @@ public class OrderResponse {
         return OrderResponse
                 .builder()
                 .id(order.getId())
-                .userId(order.getId())
+                .userId(order.getUser().getId())
                 .fullName(order.getFullName())
                 .phoneNumber(order.getPhoneNumber())
                 .email(order.getEmail())

@@ -7,11 +7,7 @@ import com.shopapp.shopappbe.dtos.OrderDetailDTO;
 import com.shopapp.shopappbe.dtos.OrderWithDetailsDTO;
 import com.shopapp.shopappbe.exceptions.DataNotFoundException;
 import com.shopapp.shopappbe.models.*;
-import com.shopapp.shopappbe.repositories.OrderDetailRepository;
-import com.shopapp.shopappbe.repositories.OrderRepository;
-import com.shopapp.shopappbe.repositories.ProductRepository;
-import com.shopapp.shopappbe.repositories.UserRepository;
-import com.shopapp.shopappbe.responses.OrderResponse;
+import com.shopapp.shopappbe.repositories.*;
 import com.shopapp.shopappbe.services.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -30,6 +26,7 @@ public class OrderService implements IOrderService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final CouponRepository couponRepository;
     private final OrderDetailRepository orderDetailRepository;
 
     private final ModelMapper modelMapper;
@@ -40,7 +37,7 @@ public class OrderService implements IOrderService {
         //tìm xem user'id có tồn tại ko
         User user = userRepository
                 .findById(orderDTO.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("Cannot find user with id: "+orderDTO.getUserId()));
+                .orElseThrow(() -> new DataNotFoundException("Cannot find user with id: " + orderDTO.getUserId()));
         //convert orderDTO => Order
         //dùng thư viện Model Mapper
         // Tạo một luồng bảng ánh xạ riêng để kiểm soát việc ánh xạ
@@ -87,7 +84,19 @@ public class OrderService implements IOrderService {
             orderDetails.add(orderDetail);
         }
 
+        String couponCode = orderDTO.getCouponCode();
+        if (!couponCode.isEmpty()) {
+            Coupon coupon = couponRepository.findByCode(couponCode)
+                    .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
 
+            if (!coupon.isActive()) {
+                throw new IllegalArgumentException("Coupon is not active");
+            }
+
+            order.setCoupon(coupon);
+        } else {
+            order.setCoupon(null);
+        }
         // Lưu danh sách OrderDetail vào cơ sở dữ liệu
         orderDetailRepository.saveAll(orderDetails);
         return order;
@@ -108,11 +117,57 @@ public class OrderService implements IOrderService {
         User existingUser = userRepository.findById(
                 orderDTO.getUserId()).orElseThrow(() ->
                 new DataNotFoundException("Cannot find user with id: " + id));
-        // Tạo một luồng bảng ánh xạ riêng để kiểm soát việc ánh xạ
-        modelMapper.typeMap(OrderDTO.class, Order.class)
-                .addMappings(mapper -> mapper.skip(Order::setId));
-        // Cập nhật các trường của đơn hàng từ orderDTO
-        modelMapper.map(orderDTO, order);
+        // Setting user
+        if (orderDTO.getUserId() != null) {
+            User user = new User();
+            user.setId(orderDTO.getUserId());
+            order.setUser(user);
+        }
+
+        if (orderDTO.getFullName() != null && !orderDTO.getFullName().trim().isEmpty()) {
+            order.setFullName(orderDTO.getFullName().trim());
+        }
+
+        if (orderDTO.getEmail() != null && !orderDTO.getEmail().trim().isEmpty()) {
+            order.setEmail(orderDTO.getEmail().trim());
+        }
+
+        if (orderDTO.getPhoneNumber() != null && !orderDTO.getPhoneNumber().trim().isEmpty()) {
+            order.setPhoneNumber(orderDTO.getPhoneNumber().trim());
+        }
+
+        if (orderDTO.getStatus() != null && !orderDTO.getStatus().trim().isEmpty()) {
+            order.setStatus(orderDTO.getStatus().trim());
+        }
+
+        if (orderDTO.getAddress() != null && !orderDTO.getAddress().trim().isEmpty()) {
+            order.setAddress(orderDTO.getAddress().trim());
+        }
+
+        if (orderDTO.getNote() != null && !orderDTO.getNote().trim().isEmpty()) {
+            order.setNote(orderDTO.getNote().trim());
+        }
+
+        if (orderDTO.getTotalMoney() != null) {
+            order.setTotalMoney(orderDTO.getTotalMoney());
+        }
+
+        if (orderDTO.getShippingMethod() != null && !orderDTO.getShippingMethod().trim().isEmpty()) {
+            order.setShippingMethod(orderDTO.getShippingMethod().trim());
+        }
+
+        if (orderDTO.getShippingAddress() != null && !orderDTO.getShippingAddress().trim().isEmpty()) {
+            order.setShippingAddress(orderDTO.getShippingAddress().trim());
+        }
+
+        if (orderDTO.getShippingDate() != null) {
+            order.setShippingDate(orderDTO.getShippingDate());
+        }
+
+        if (orderDTO.getPaymentMethod() != null && !orderDTO.getPaymentMethod().trim().isEmpty()) {
+            order.setPaymentMethod(orderDTO.getPaymentMethod().trim());
+        }
+
         order.setUser(existingUser);
         return orderRepository.save(order);
     }
@@ -122,11 +177,12 @@ public class OrderService implements IOrderService {
     public void deleteOrder(Long id) {
         Order order = orderRepository.findById(id).orElse(null);
         //no hard-delete, => please soft-delete
-        if(order != null) {
+        if (order != null) {
             order.setActive(false);
             orderRepository.save(order);
         }
     }
+
     @Override
     public List<Order> findByUserId(Long userId) {
         return orderRepository.findByUserId(userId);
@@ -136,6 +192,7 @@ public class OrderService implements IOrderService {
     public Page<Order> getOrdersByKeyword(String keyword, Pageable pageable) {
         return orderRepository.findByKeyword(keyword, pageable);
     }
+
     @Transactional
     public Order updateOrderWithDetails(OrderWithDetailsDTO orderWithDetailsDTO) {
         modelMapper.typeMap(OrderWithDetailsDTO.class, Order.class)

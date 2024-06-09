@@ -1,14 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { NgForm } from '@angular/forms';
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { inject } from '@angular/core';
-
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { OrderResponse } from '../../../responses/order/order.response';
+import {Component, inject, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {FormsModule} from '@angular/forms';
+import {CommonModule} from '@angular/common';
+import {environment} from '../../../../environments/environment';
+import {OrderResponse} from '../../../responses/order/order.response';
 import {OrderService} from "../../../servies/order.service";
 import {OrderDTO} from "../../../dtos/order/order-dto";
 
@@ -48,7 +43,7 @@ export class DetailOrderAdminComponent implements OnInit{
   constructor(
     private route: ActivatedRoute,
     private router: Router
-    ) {}
+  ) {}
 
   ngOnInit(): void {
     this.getOrderDetails();
@@ -59,38 +54,42 @@ export class DetailOrderAdminComponent implements OnInit{
     this.orderId = Number(this.route.snapshot.paramMap.get('id'));
     this.orderService.getOrderById(this.orderId).subscribe({
       next: (response: any) => {
-        this.orderResponse.id = response.id;
-        this.orderResponse.user_id = response.user_id;
-        this.orderResponse.fullname = response.fullname;
-        this.orderResponse.email = response.email;
-        this.orderResponse.phone_number = response.phone_number;
-        this.orderResponse.address = response.address;
-        this.orderResponse.note = response.note;
-        this.orderResponse.total_money = response.total_money;
-        if (response.order_date) {
+        debugger;
+        this.orderResponse.id = response.data.id;
+        debugger;
+        this.orderResponse.user_id = response.data.user_id;
+        debugger;
+        this.orderResponse.fullname = response.data.fullname;
+        this.orderResponse.email = response.data.email;
+        this.orderResponse.phone_number = response.data.phone_number;
+        this.orderResponse.address = response.data.address;
+        this.orderResponse.note = response.data.note;
+        this.orderResponse.total_money = response.data.total_money;
+        if (response.data.order_date) {
           this.orderResponse.order_date = new Date(
-            response.order_date[0],
-            response.order_date[1] - 1,
-            response.order_date[2]
+            response.data.order_date[0],
+            response.data.order_date[1] - 1,
+            response.data.order_date[2]
           );
         }
-        this.orderResponse.order_details = response.order_details
+        this.orderResponse.order_details = response.data.order_details
           .map((order_detail:any) => {
-          order_detail.product.thumbnail = `${environment.apiBaseUrl}/products/images/${order_detail.product.thumbnail}`;
-          order_detail.number_of_products = order_detail.numberOfProducts
-          //order_detail.total_money = order_detail.totalMoney
-          return order_detail;
-        });
-        this.orderResponse.payment_method = response.payment_method;
-        if (response.shipping_date) {
+            debugger;
+            order_detail.product.thumbnail = `${environment.apiBaseUrl}/products/images/${order_detail.product.thumbnail}`;
+            order_detail.number_of_products = order_detail.numberOfProducts
+            //order_detail.total_money = order_detail.totalMoney
+            return order_detail;
+          });
+        this.orderResponse.payment_method = response.data.payment_method;
+        if (response.data.shipping_date) {
           this.orderResponse.shipping_date = new Date(
-            response.shipping_date[0],
-            response.shipping_date[1] - 1,
-            response.shipping_date[2]
+            response.data.shipping_date[0],
+            response.data.shipping_date[1] - 1,
+            response.data.shipping_date[2]
           );
         }
-        this.orderResponse.shipping_method = response.shipping_method;
-        this.orderResponse.status = response.status;
+        this.orderResponse.shipping_method = response.data.shipping_method;
+        this.orderResponse.status = response.data.status;
         debugger
       },
       complete: () => {
@@ -108,23 +107,19 @@ export class DetailOrderAdminComponent implements OnInit{
     this.orderService
       .updateOrder(this.orderId, new OrderDTO(this.orderResponse))
       .subscribe({
-      next: (response: Object) => {
-        debugger
-        // Handle the successful update
-        //console.log('Order updated successfully:', response);
-        // Navigate back to the previous page
-        //this.router.navigate(['/admin/orders']);
-        this.router.navigate(['../'], { relativeTo: this.route });
-      },
-      complete: () => {
-        debugger;
-      },
-      error: (error: any) => {
-        // Handle the error
-        debugger
-        console.error('Error updating order:', error);
-        this.router.navigate(['../'], { relativeTo: this.route });
-      }
-    });
+        next: (response: Object) => {
+          debugger
+          this.router.navigate(['../'], { relativeTo: this.route });
+        },
+        complete: () => {
+          debugger;
+        },
+        error: (error: any) => {
+          // Handle the error
+          debugger
+          console.error('Error updating order:', error);
+          this.router.navigate(['../'], { relativeTo: this.route });
+        }
+      });
   }
 }

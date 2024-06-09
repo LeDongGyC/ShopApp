@@ -16,7 +16,14 @@
         {{ category.name }}
       </option>
     </select>
-    <button class="btn btn-primary ml-2" (click)="searchProducts()">Tìm kiếm</button>
+    <select class="form-control product-category" [(ngModel)]="sort">
+      <option value="default" selected>Sắp xếp theo</option>
+      <option value="price_asc">Giá: Thấp đến cao</option>
+      <option value="price_desc">Giá: Cao đến thấp</option>
+      <option value="name_asc">Tên: A-Z</option>
+      <option value="name_desc">Tên: Z-A</option>
+    </select>
+    <button style="margin-left: 10px" class="btn btn-primary ml-2" (click)="searchProducts()">Tìm kiếm</button>
   </div>
   <div class="row">
     <div class="col-lg-4 col-md-6" *ngFor="let product of products">
@@ -24,7 +31,7 @@
         <img [src]="product.url" alt="Product Image" class="product-image">
         <h3 class="product-name">{{ product.name }}</h3>
         <p class="product-description">{{ product.description }}</p>
-        <p class="product-price">Giá: ${{ product.price }}</p>
+        <p class="product-price">Giá: {{ product.price | currency: 'vnd' }}</p>
       </div>
     </div>
   </div>

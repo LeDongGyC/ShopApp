@@ -9,6 +9,7 @@ import {UpdateProductAdminComponent} from "./product/update/update.product.admin
 import {InsertProductAdminComponent} from "./product/insert/insert.product.admin.component";
 import {UpdateCategoryAdminComponent} from "./category/update/update.category.admin.component";
 import {InsertCategoryAdminComponent} from "./category/insert/insert.category.admin.component";
+import {UserAdminComponent} from "./user/user.admin.component";
 
 
 export const adminRoutes: Routes = [
@@ -49,6 +50,10 @@ export const adminRoutes: Routes = [
       {
         path: 'categories/insert',
         component: InsertCategoryAdminComponent
+      },
+      {
+        path: 'users',
+        component: UserAdminComponent
       },
     ]
   }

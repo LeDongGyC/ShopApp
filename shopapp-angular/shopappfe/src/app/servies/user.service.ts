@@ -1,55 +1,60 @@
-import {Inject, Injectable} from '@angular/core';
-import {environment} from "../../environments/environment";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {Inject, inject, Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Observable} from 'rxjs';
+
+import {environment} from '../../environments/environment';
+import {UserResponse} from '../responses/user/user.response';
+import {DOCUMENT} from '@angular/common';
 import {HttpUtilService} from "./http-util.service";
-import {Observable} from "rxjs";
-import {LoginDto} from "../dtos/user/login-dto";
-import {RegisterDto} from "../dtos/user/register-dto";
-import {DOCUMENT} from "@angular/common";
-import {UserResponse} from "../responses/user/user.response";
+import {ApiResponse} from "../responses/user.response";
 import {UpdateUserDTO} from "../dtos/user/update-user-dto";
+import {RegisterDto} from "../dtos/user/register-dto";
+import {LoginDto} from "../dtos/user/login-dto";
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiConfig = {
-    headers: this.httpUtilService.createHeaders()
-  };
   private apiRegister = `${environment.apiBaseUrl}/users/register`;
   private apiLogin = `${environment.apiBaseUrl}/users/login`;
   private apiUserDetail = `${environment.apiBaseUrl}/users/details`;
+
+  private http = inject(HttpClient);
+  private httpUtilService = inject(HttpUtilService);
+
   localStorage?: Storage;
 
+  private apiConfig = {
+    headers: this.httpUtilService.createHeaders(),
+  }
 
-  constructor(private http: HttpClient,
-              private httpUtilService: HttpUtilService,
-              @Inject(DOCUMENT) private document: Document
+  constructor(
+    @Inject(DOCUMENT) private document: Document
   ) {
     this.localStorage = document.defaultView?.localStorage;
   }
 
-  register(registerDTO: RegisterDto): Observable<any> {
-    return this.http.post(this.apiRegister, registerDTO, this.apiConfig);
+  register(registerDTO: RegisterDto): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(this.apiRegister, registerDTO, this.apiConfig);
   }
 
-  login(loginDto: LoginDto): Observable<any> {
-    return this.http.post(this.apiLogin, loginDto, this.apiConfig);
+  login(loginDTO: LoginDto): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(this.apiLogin, loginDTO, this.apiConfig);
   }
 
-  getUserDetail(token: string) {
-    return this.http.post(this.apiUserDetail, {
-      headers: new Headers({
+  getUserDetail(token: string): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(this.apiUserDetail, {
+      headers: new HttpHeaders({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }),
+        Authorization: `Bearer ${token}`
+      })
     })
   }
 
-  updateUserDetail(token: string, updateUserDTO: UpdateUserDTO) {
+  updateUserDetail(token: string, updateUserDTO: UpdateUserDTO): Observable<ApiResponse> {
     debugger
     let userResponse = this.getUserResponseFromLocalStorage();
-    return this.http.put(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {
+    return this.http.put<ApiResponse>(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
@@ -72,7 +77,6 @@ export class UserService {
       console.error('Error saving user response to local storage:', error);
     }
   }
-
 
   getUserResponseFromLocalStorage(): UserResponse | null {
     try {
@@ -102,5 +106,18 @@ export class UserService {
     }
   }
 
+  getUsers(params: { page: number, limit: number, keyword: string }): Observable<ApiResponse> {
+    const url = `${environment.apiBaseUrl}/users`;
+    return this.http.get<ApiResponse>(url, {params: params});
+  }
 
+  resetPassword(userId: number): Observable<ApiResponse> {
+    const url = `${environment.apiBaseUrl}/users/reset-password/${userId}`;
+    return this.http.put<ApiResponse>(url, null, this.apiConfig);
+  }
+
+  toggleUserStatus(params: { userId: number, enable: boolean }): Observable<ApiResponse> {
+    const url = `${environment.apiBaseUrl}/users/block/${params.userId}/${params.enable ? '1' : '0'}`;
+    return this.http.put<ApiResponse>(url, null, this.apiConfig);
+  }
 }

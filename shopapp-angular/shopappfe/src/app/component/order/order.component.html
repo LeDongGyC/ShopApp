@@ -15,11 +15,11 @@
                  class="form-control"
                  id="fullname"
                  [class.is-invalid]="orderForm.get('fullname')!.invalid && orderForm.get('fullname')!.touched">
-          @if(orderForm.get('fullname')!.invalid &&
+          @if (orderForm.get('fullname')!.invalid &&
           orderForm.get('fullname')!.touched) {
-          <div class="invalid-feedback">
+            <div class="invalid-feedback">
               Họ và tên là trường bắt buộc.
-          </div>
+            </div>
           }
         </div>
         <div class="mb-3">
@@ -29,12 +29,12 @@
                  class="form-control"
                  id="email"
                  [class.is-invalid]="orderForm.get('email')!.invalid && orderForm.get('email')!.touched">
-          @if(orderForm.get('email')!.invalid
+          @if (orderForm.get('email')!.invalid
           && orderForm.get('email')!.touched) {
-          <div
+            <div
               class="invalid-feedback">
-          {{ orderForm.get('email')!.hasError('email') ? 'Email không hợp lệ' : 'Email là trường bắt buộc' }}
-          </div>
+              {{ orderForm.get('email')!.hasError('email') ? 'Email không hợp lệ' : 'Email là trường bắt buộc' }}
+            </div>
           }
 
         </div>
@@ -48,11 +48,11 @@
                  required
                  id="phone"
                  [class.is-invalid]="orderForm.get('phone_number')!.invalid && orderForm.get('phone_number')!.touched">
-          @if(orderForm.get('phone_number')!.invalid
+          @if (orderForm.get('phone_number')!.invalid
           && orderForm.get('phone_number')!.touched) {
-          <div class="invalid-feedback">
+            <div class="invalid-feedback">
               Số điện thoại là trường bắt buộc và ít nhất 6 ký tự.
-          </div>
+            </div>
           }
         </div>
         <div class="mb-3">
@@ -64,11 +64,11 @@
                  required
                  id="address"
                  [class.is-invalid]="orderForm.get('address')!.invalid && orderForm.get('address')!.touched">
-          @if(orderForm.get('address')!.invalid
+          @if (orderForm.get('address')!.invalid
           && orderForm.get('address')!.touched) {
-          <div class="invalid-feedback">
+            <div class="invalid-feedback">
               Địa chỉ là trường bắt buộc và ít nhất 5 ký tự.
-          </div>
+            </div>
           }
 
         </div>
@@ -133,19 +133,30 @@
 
         </table>
         <div class="text-start mt-3">
-          <h4 class="header-text text-end ">Tổng giá: {{ totalAmount | number:'1.2-2'}}</h4>
+          <h4 class="header-text text-end ">Tổng giá: {{ totalAmount | number:'1.2-2' }} đ</h4>
         </div>
         <div class="mt-3">
           <h4 class="product-header">Nhập coupon</h4>
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Nhập coupon">
-            <button class="btn btn-gradient" type="button">Áp dụng</button>
+            <input type="text" class="form-control"
+                   formControlName="couponCode"
+                   placeholder="Nhập coupon">
+            <button
+              (click)="applyCoupon()"
+              class="btn btn-gradient" type="button">Áp dụng
+            </button>
           </div>
         </div>
+        @if (couponDiscount > 0) {
+          <div class="text-start mt-3">
+            <h6 class="header-text text-end ">Bạn được discount: {{ couponDiscount | number:'1.2-2' }} đ</h6>
+          </div>
+        }
         <div class="text-start mt-3">
           <button
             (click)="placeOrder()"
-            class="btn btn-gradient" type="button">Đặt hàng</button>
+            class="btn btn-gradient" type="button">Đặt hàng
+          </button>
         </div>
       </div>
     </div>

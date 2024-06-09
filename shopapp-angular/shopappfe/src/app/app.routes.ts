@@ -19,7 +19,7 @@ export const routes: Routes = [
   // {path: 'user-profile', component: UserProfileComponent},
   {path: 'orders', component: OrderComponent, canActivate: [AuthGuardFn]},
   {path: 'user-profile', component: UserProfileComponent, canActivate: [AuthGuardFn]},
-  {path: 'orders/:id', component: OrderDetailComponent},
+  {path: 'orders/:orderId', component: OrderDetailComponent},
   //Admin
   {
     path: 'admin',

@@ -1,28 +1,32 @@
 import {Component, OnInit} from '@angular/core';
-import {FooterComponent} from "../footer/footer.component";
-import {HeaderComponent} from "../header/header.component";
-import {CommonModule} from "@angular/common";
-import {OrderResponse} from "../../responses/order/order.response";
+
+import {OrderResponse} from '../../responses/order/order.response';
+import {environment} from '../../../environments/environment';
+import {OrderDetail} from '../../models/order.detail';
+import {FooterComponent} from '../footer/footer.component';
+import {HeaderComponent} from '../header/header.component';
+import {CommonModule} from '@angular/common';
+
+import {HttpErrorResponse} from '@angular/common/http';
+import {ApiResponse} from "../../responses/user.response";
 import {OrderService} from "../../servies/order.service";
 import {ActivatedRoute} from "@angular/router";
-import {OrderDetail} from "../../models/order.detail";
-import {environment} from "../../../environments/environment";
 
 @Component({
-  selector: 'app-order-confirm',
+  selector: 'app-order-detail',
+  templateUrl: 'order-confirm.component.html',
+  styleUrls: ['order-confirm.component.scss'],
   standalone: true,
   imports: [
     FooterComponent,
     HeaderComponent,
     CommonModule
-  ],
-  templateUrl: './order-confirm.component.html',
-  styleUrl: './order-confirm.component.scss'
+  ]
 })
 export class OrderDetailComponent implements OnInit {
   orderResponse: OrderResponse = {
-    id: 1, // Hoặc bất kỳ giá trị số nào bạn muốn
-    user_id: 1,
+    id: 0, // Hoặc bất kỳ giá trị số nào bạn muốn
+    user_id: 0,
     fullname: '',
     phone_number: '',
     email: '',
@@ -50,11 +54,11 @@ export class OrderDetailComponent implements OnInit {
 
   getOrderDetails(): void {
     debugger
-    // const orderId = Number(this.route.snapshot.paramMap.get('orderId'));
-    const orderId = 1; // Hoặc bất kỳ giá trị số nào bạn muốn
+    const orderId = Number(this.route.snapshot.paramMap.get('orderId'));
     this.orderService.getOrderById(orderId).subscribe({
-      next: (response: any) => {
+      next: (apiResponse: ApiResponse) => {
         debugger;
+        const response = apiResponse.data
         this.orderResponse.id = response.id;
         this.orderResponse.user_id = response.user_id;
         this.orderResponse.fullname = response.fullname;
@@ -88,12 +92,11 @@ export class OrderDetailComponent implements OnInit {
       complete: () => {
         debugger;
       },
-      error: (error: any) => {
+      error: (error: HttpErrorResponse) => {
         debugger;
-        console.error('Error fetching detail:', error);
+        console.error(error?.error?.message ?? '');
       }
     });
   }
 }
-
 

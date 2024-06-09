@@ -1,3 +1,4 @@
+
 package com.shopapp.shopappbe.controllers;
 
 import com.github.javafaker.Faker;
@@ -8,6 +9,7 @@ import com.shopapp.shopappbe.models.Product;
 import com.shopapp.shopappbe.models.ProductImage;
 import com.shopapp.shopappbe.responses.ProductListResponse;
 import com.shopapp.shopappbe.responses.ProductResponse;
+import com.shopapp.shopappbe.responses.ResponseObject;
 import com.shopapp.shopappbe.services.IProductService;
 import com.shopapp.shopappbe.utils.MessageKeys;
 import jakarta.validation.Valid;
@@ -46,23 +48,29 @@ public class ProductController {
     @PostMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     //POST http://localhost:8088/v1/api/products
-    public ResponseEntity<?> createProduct(
+    public ResponseEntity<ResponseObject> createProduct(
             @Valid @RequestBody ProductDTO productDTO,
             BindingResult result
-    ) {
-        try {
-            if (result.hasErrors()) {
-                List<String> errorMessages = result.getFieldErrors()
-                        .stream()
-                        .map(FieldError::getDefaultMessage)
-                        .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
-            }
-            Product newProduct = productService.createProduct(productDTO);
-            return ResponseEntity.ok(newProduct);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    ) throws Exception {
+        if (result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(String.join("; ", errorMessages))
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
         }
+        Product newProduct = productService.createProduct(productDTO);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Create new product successfully")
+                        .status(HttpStatus.CREATED)
+                        .data(newProduct)
+                        .build());
     }
 
     @PostMapping(value = "uploads/{id}",
@@ -75,9 +83,14 @@ public class ProductController {
     ) {
         try {
             Product existingProduct = productService.getProductById(productId);
-            files = files == null ? new ArrayList<>() : files;
+            files = files == null ? new ArrayList<MultipartFile>() : files;
             if (files.size() > ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
-                return ResponseEntity.badRequest().body(localizationUtils.getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_MAX_5));
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .message(localizationUtils
+                                        .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_MAX_5))
+                                .build()
+                );
             }
             List<ProductImage> productImages = new ArrayList<>();
             for (MultipartFile file : files) {
@@ -87,12 +100,20 @@ public class ProductController {
                 // Kiểm tra kích thước file và định dạng
                 if (file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
                     return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                            .body(localizationUtils.getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_LARGE));
+                            .body(ResponseObject.builder()
+                                    .message(localizationUtils
+                                            .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_LARGE))
+                                    .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                                    .build());
                 }
                 String contentType = file.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                            .body(localizationUtils.getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_MUST_BE_IMAGE));
+                            .body(ResponseObject.builder()
+                                    .message(localizationUtils
+                                            .getLocalizedMessage(MessageKeys.UPLOAD_IMAGES_FILE_MUST_BE_IMAGE))
+                                    .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                                    .build());
                 }
                 // Lưu file và cập nhật thumbnail trong DTO
                 String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
@@ -105,7 +126,11 @@ public class ProductController {
                 );
                 productImages.add(productImage);
             }
-            return ResponseEntity.ok().body(productImages);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Upload image successfully")
+                    .status(HttpStatus.CREATED)
+                    .data(productImages)
+                    .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -157,7 +182,7 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ProductListResponse> getProducts(
+    public ResponseEntity<ResponseObject> getProducts(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
             @RequestParam(defaultValue = "0") int page,
@@ -194,39 +219,42 @@ public class ProductController {
         // Lấy tổng số trang
         int totalPages = productPage.getTotalPages() - 1;
         List<ProductResponse> products = productPage.getContent();
-        return ResponseEntity.ok(ProductListResponse
+        ProductListResponse productListResponse = ProductListResponse
                 .builder()
                 .products(products)
                 .totalPages(totalPages)
+                .build();
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Get products successfully")
+                .status(HttpStatus.OK)
+                .data(productListResponse)
                 .build());
     }
 
     //http://localhost:8088/api/v1/products/6
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(
+    public ResponseEntity<ResponseObject> getProductById(
             @PathVariable("id") Long productId
-    ) {
-        try {
-            Product existingProduct = productService.getProductById(productId);
-            return ResponseEntity.ok(ProductResponse.fromProduct(existingProduct));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    ) throws Exception {
+        Product existingProduct = productService.getProductById(productId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .data(ProductResponse.fromProduct(existingProduct))
+                .message("Get detail product successfully")
+                .status(HttpStatus.OK)
+                .build());
 
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
 //    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
-    public ResponseEntity<String> deleteProduct(@PathVariable long id) {
-        try {
-            productService.deleteProduct(id);
-            return ResponseEntity.ok(String.format("Product with id = %d deleted successfully", id));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
-
+    public ResponseEntity<ResponseObject> deleteProduct(@PathVariable long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .data(null)
+                .message(String.format("Product with id = %d deleted successfully", id))
+                .status(HttpStatus.OK)
+                .build());
     }
 
     //@PostMapping("/generateFakeProducts")
@@ -256,29 +284,30 @@ public class ProductController {
     //update a product
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> updateProduct(
+    public ResponseEntity<ResponseObject> updateProduct(
             @PathVariable long id,
-            @RequestBody ProductDTO productDTO) {
-        try {
-            Product updatedProduct = productService.updateProduct(id, productDTO);
-            return ResponseEntity.ok(updatedProduct);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+            @RequestBody ProductDTO productDTO) throws Exception {
+        Product updatedProduct = productService.updateProduct(id, productDTO);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .data(updatedProduct)
+                .message("Update product successfully")
+                .status(HttpStatus.OK)
+                .build());
     }
 
     @GetMapping("by-ids")
-    public ResponseEntity<?> getProductIds(@RequestParam("ids") String ids) {
-        try {
-            // Tách chuỗi ids thành một mảng các số nguyên
-            List<Long> productIds = Arrays.stream(ids.split(","))
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
-            List<Product> products = productService.findProductsByIds(productIds);
-            return ResponseEntity.ok(products);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ResponseObject> getProductsByIds(@RequestParam("ids") String ids) {
+        //eg: 1,3,5,7
+        // Tách chuỗi ids thành một mảng các số nguyên
+        List<Long> productIds = Arrays.stream(ids.split(","))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        List<Product> products = productService.findProductsByIds(productIds);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .data(products.stream().map(product -> ProductResponse.fromProduct(product)).toList())
+                .message("Get products successfully")
+                .status(HttpStatus.OK)
+                .build()
+        );
     }
 }
-

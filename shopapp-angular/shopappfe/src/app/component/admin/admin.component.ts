@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {UserService} from "../../servies/user.service";
 import {TokenService} from "../../servies/token.service";
 import {Router, RouterModule} from "@angular/router";
@@ -16,30 +16,41 @@ import {CommonModule} from "@angular/common";
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'
 })
-export class AdminComponent {
-  adminComponent: string = 'orders';
+export class AdminComponent implements OnInit {
+  //adminComponent: string = 'orders';
   userResponse?: UserResponse | null;
-
-  constructor(
-    private userService: UserService,
-    private tokenService: TokenService,
-    private router: Router,
-  ) {
-
-  }
+  private userService = inject(UserService);
+  private tokenService = inject(TokenService);
+  private router = inject(Router);
 
   ngOnInit() {
     this.userResponse = this.userService.getUserResponseFromLocalStorage();
+    // Default router
+    debugger
+    if (this.router.url === '/admin') {
+      this.router.navigate(['/admin/orders']);
+    }
   }
 
   logout() {
     this.userService.removeUserFromLocalStorage();
     this.tokenService.removeToken();
     this.userResponse = this.userService.getUserResponseFromLocalStorage();
+    this.router.navigate(['/']);
   }
 
   showAdminComponent(componentName: string): void {
-    this.adminComponent = componentName;
+    debugger
+    if (componentName === 'orders') {
+      this.router.navigate(['/admin/orders']);
+    } else if (componentName === 'categories') {
+      this.router.navigate(['/admin/categories']);
+    } else if (componentName === 'products') {
+      this.router.navigate(['/admin/products']);
+    } else if (componentName === 'users') {
+      this.router.navigate(['/admin/users']);
+    }
   }
+
 
 }

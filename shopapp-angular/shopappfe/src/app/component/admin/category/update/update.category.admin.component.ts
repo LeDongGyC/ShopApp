@@ -4,6 +4,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Category} from "../../../../models/product/category";
 import {CategoryService} from "../../../../servies/category.service";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ApiResponse} from "../../../../responses/user.response";
 import {UpdateCategoryDto} from "../../../../dtos/category/update-category-dto";
 
 @Component({
@@ -41,14 +43,15 @@ export class UpdateCategoryAdminComponent implements OnInit {
 
   getCategoryDetails(): void {
     this.categoryService.getDetailCategory(this.categoryId).subscribe({
-      next: (category: Category) => {
-        this.updatedCategory = {...category};
+      next: (apiResponse: ApiResponse) => {
+        this.updatedCategory = {...apiResponse.data};
       },
       complete: () => {
 
       },
-      error: (error: any) => {
-
+      error: (error: HttpErrorResponse) => {
+        debugger;
+        console.error(error?.error?.message ?? '');
       }
     });
   }
@@ -66,9 +69,9 @@ export class UpdateCategoryAdminComponent implements OnInit {
         debugger;
         this.router.navigate(['/admin/categories']);
       },
-      error: (error: any) => {
+      error: (error: HttpErrorResponse) => {
         debugger;
-        console.error('Error fetching categorys:', error);
+        console.error(error?.error?.message ?? '');
       }
     });
   }

@@ -25,9 +25,10 @@
           <select id="category" [(ngModel)]="insertProductDTO.category_id" name="category" class="form-control"
                   required>
             <!-- Display list of categories -->
-            @for(category of categories; track category.id) {
-            <option
-            [value]="category.id">{{ category.name }}</option>
+            @for (category of categories; track category.id) {
+              <option
+                [value]="category.id">{{ category.name }}
+              </option>
             }
           </select>
         </div>

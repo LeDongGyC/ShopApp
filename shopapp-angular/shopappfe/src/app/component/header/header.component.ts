@@ -21,7 +21,7 @@ export class HeaderComponent implements OnInit {
   userResponse?: UserResponse | null;
   isPopoverOpen = false;
   activeNavItem: number = 0;
-
+  private orderId = this.tokenService.getUserId();
   constructor(
     private userService: UserService,
     private tokenService: TokenService,
@@ -43,10 +43,13 @@ export class HeaderComponent implements OnInit {
     if (index === 0) {
       debugger
       this.router.navigate(['/user-profile']);
+    } else if (index === 1) {
+      this.router.navigate(['/orders/user', this.orderId]);
     } else if (index === 2) {
       this.userService.removeUserFromLocalStorage();
       this.tokenService.removeToken();
       this.userResponse = this.userService.getUserResponseFromLocalStorage();
+      this.router.navigate(['/']);
     }
     this.isPopoverOpen = false; // Close the popover after clicking an item
   }

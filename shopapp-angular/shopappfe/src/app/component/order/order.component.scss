@@ -3,17 +3,14 @@
 .container {
   color: white;
 }
-
 .intro-section {
   color: white;
   padding: 20px;
   text-align: center;
 }
-
 .product-header {
   color: $shopapp-tint-color;
 }
-
 .form-control {
   background-color: $shopapp-background-color;
   border: 1px solid rgb(29, 33, 54);
@@ -24,19 +21,15 @@
   border-color: white;
   background-color: $shopapp-background-color;
 }
-
 .form-label {
   color: white;
 }
-
 .product-header {
   color: $shopapp-tint-color;
 }
-
 .product-order {
   color: $shopapp-title-color;
 }
-
 table {
   width: 100%;
   border-radius: 10px;
@@ -51,7 +44,6 @@ td {
   padding: 10px;
   text-align: center;
 }
-
 .product-info {
   display: flex;
   align-items: center;
@@ -70,8 +62,40 @@ td {
 }
 
 .btn-gradient {
-  background: linear-gradient(to right, rgb(225, 64, 180), $shopapp-color);
+  background: linear-gradient(to right, $shopapp-tint-color, $shopapp-color);
   color: white;
   border-radius: 30px;
   width: 200px;
+}
+
+.border-wrapper {
+  border: 1px solid white;
+}
+
+.product-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.product-quantity button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.product-quantity input {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  width: 40px;
+  margin: 0 10px;
+}
+
+.product-quantity input:focus {
+  outline: none;
 }

@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 import {InsertProductDTO} from "../../../../dtos/product/insert-product-dto";
 import {Category} from "../../../../models/product/category";
 import {CategoryService} from "../../../../servies/category.service";
 import {ProductService} from "../../../../servies/product.service";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ApiResponse} from "../../../../responses/user.response";
 
 @Component({
   selector: 'app-insert.product.admin',
@@ -35,29 +36,33 @@ export class InsertProductAdminComponent implements OnInit {
   ) {
 
   }
+
   ngOnInit() {
     this.getCategories(1, 100)
   }
+
   getCategories(page: number, limit: number) {
     this.categoryService.getCategories(page, limit).subscribe({
-      next: (categories: Category[]) => {
-        debugger
-        this.categories = categories;
+      next: (apiResponse: ApiResponse) => {
+        debugger;
+        this.categories = apiResponse.data;
       },
       complete: () => {
         debugger;
       },
-      error: (error: any) => {
-        console.error('Error fetching categories:', error);
+      error: (error: HttpErrorResponse) => {
+        debugger;
+        console.error(error?.error?.message ?? '');
       }
     });
   }
+
   onFileChange(event: any) {
     // Retrieve selected files from input element
     const files = event.target.files;
     // Limit the number of selected files to 5
     if (files.length > 5) {
-      alert('Please select a maximum of 5 images.');
+      console.error('Please select a maximum of 5 images.');
       return;
     }
     // Store the selected files in the newProduct object
@@ -66,31 +71,28 @@ export class InsertProductAdminComponent implements OnInit {
 
   insertProduct() {
     this.productService.insertProduct(this.insertProductDTO).subscribe({
-      next: (response) => {
+      next: (apiResponse: ApiResponse) => {
         debugger
         if (this.insertProductDTO.images.length > 0) {
-          const productId = response.id; // Assuming the response contains the newly created product's ID
+          const productId = apiResponse.data.id; // Assuming the response contains the newly created product's ID
           this.productService.uploadImages(productId, this.insertProductDTO.images).subscribe({
-            next: (imageResponse) => {
+            next: (imageResponse: ApiResponse) => {
               debugger
               // Handle the uploaded images response if needed
-              console.log('Images uploaded successfully:', imageResponse);
+              console.log('Images uploaded successfully:', imageResponse.data);
               // Navigate back to the previous page
-              this.router.navigate(['../'], { relativeTo: this.route });
+              this.router.navigate(['../'], {relativeTo: this.route});
             },
-            error: (error) => {
-              // Handle the error while uploading images
-              alert(error.error)
-              console.error('Error uploading images:', error);
+            error: (error: HttpErrorResponse) => {
+              debugger;
+              console.error(error?.error?.message ?? '');
             }
           })
         }
       },
-      error: (error) => {
-        debugger
-        // Handle error while inserting the product
-        alert(error.error)
-        console.error('Error inserting product:', error);
+      error: (error: HttpErrorResponse) => {
+        debugger;
+        console.error(error?.error?.message ?? '');
       }
     });
   }

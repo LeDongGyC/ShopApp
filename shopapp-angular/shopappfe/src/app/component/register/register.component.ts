@@ -1,6 +1,6 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {Router} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 import {CommonModule} from "@angular/common";
 import {RegisterDto} from "../../dtos/user/register-dto";
 import {UserService} from "../../servies/user.service";
@@ -13,6 +13,7 @@ import {UserService} from "../../servies/user.service";
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'

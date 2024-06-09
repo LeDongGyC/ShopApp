@@ -3,6 +3,7 @@ package com.shopapp.shopappbe.controllers;
 import com.shopapp.shopappbe.dtos.CommentDTO;
 import com.shopapp.shopappbe.models.User;
 import com.shopapp.shopappbe.responses.CommentResponse;
+import com.shopapp.shopappbe.responses.ResponseObject;
 import com.shopapp.shopappbe.services.impls.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("")
-    public ResponseEntity<List<CommentResponse>> getAllComments(
+    public ResponseEntity<ResponseObject> getAllComments(
             @RequestParam(value = "user_id", required = false) Long userId,
             @RequestParam("product_id") Long productId
     ) {
@@ -38,7 +39,11 @@ public class CommentController {
         } else {
             commentResponses = commentService.getCommentsByUserAndProduct(userId, productId);
         }
-        return ResponseEntity.ok(commentResponses);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Get comments successfully")
+                .status(HttpStatus.OK)
+                .data(commentResponses)
+                .build());
     }
 
     @PutMapping("/{id}")
@@ -53,7 +58,10 @@ public class CommentController {
                 return ResponseEntity.badRequest().body("You cannot update another user's comment");
             }
             commentService.updateComment(commentId, commentDTO);
-            return ResponseEntity.ok("Update comment successfully");
+            return ResponseEntity.ok(
+                    new ResponseObject(
+                            "Update comment successfully",
+                            HttpStatus.OK, null));
         } catch (Exception e) {
             // Handle and log the exception
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -73,7 +81,11 @@ public class CommentController {
                 return ResponseEntity.badRequest().body("You cannot comment as another user");
             }
             commentService.insertComment(commentDTO);
-            return ResponseEntity.ok("Insert comment successfully");
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .message("Insert comment successfully")
+                            .status(HttpStatus.OK)
+                            .build());
         } catch (Exception e) {
             // Handle and log the exception
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

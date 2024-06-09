@@ -12,10 +12,10 @@
                [class.is-invalid]="userProfileForm.get('fullname')!.invalid && userProfileForm.get('fullname')!.touched">
         @if(userProfileForm.get('fullname')!.invalid &&
         userProfileForm.get('fullname')!.touched) {
-        <div
-          class="invalid-feedback">
-          Họ và tên là trường bắt buộc.
-      </div>
+          <div
+            class="invalid-feedback">
+            Họ và tên là trường bắt buộc.
+          </div>
         }
       </div>
       <div class="mb-3">
@@ -45,9 +45,9 @@
                         && userProfileForm.get('password')!.touched">
         @if(userProfileForm.get('password')!.invalid
         && userProfileForm.get('password')!.touched) {
-        <div class="invalid-feedback">
-          Mật khẩu ít nhất 3 ký tự.
-        </div>
+          <div class="invalid-feedback">
+            Mật khẩu ít nhất 3 ký tự.
+          </div>
         }
       </div>
       <div class="mb-3">
@@ -61,9 +61,9 @@
                [class.is-invalid]="userProfileForm.get('retype_password')!.invalid
                           && userProfileForm.get('retype_password')!.touched">
         @if(userProfileForm.hasError('passwordMismatch')) {
-        <div class="invalid-feedback">
-          Mật khẩu không khớp.
-        </div>
+          <div class="invalid-feedback">
+            Mật khẩu không khớp.
+          </div>
         }
       </div>
       <div class="text-center">
