@@ -29,6 +29,14 @@ export class TokenService {
     return 'userId' in userObject ? parseInt(userObject['userId']) : 0;
   }
 
+  getName(): string {
+    let token = this.getToken();
+    if (!token) {
+      return '';
+    }
+    let userObject = this.jwtHelperService.decodeToken(token);
+    return 'name' in userObject ? userObject['name'] : '';
+  }
 
   removeToken(): void {
     this.localStorage?.removeItem(this.TOKEN_KEY);

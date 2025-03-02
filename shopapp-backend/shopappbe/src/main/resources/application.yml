@@ -28,6 +28,10 @@ spring:
       #Phiên bản baseline sẽ = 1 và không thực hiện bất kỳ thay đổi nào trong DB
     baseline-on-migrate: true
     baseline-version: 0
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 api:
   prefix: api/v1
 jwt:
