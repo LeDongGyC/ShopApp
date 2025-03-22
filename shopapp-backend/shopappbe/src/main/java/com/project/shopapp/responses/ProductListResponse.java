@@ -15,4 +15,3 @@ public class ProductListResponse {
     private List<ProductResponse> products;
     private int totalPages;
 }
-

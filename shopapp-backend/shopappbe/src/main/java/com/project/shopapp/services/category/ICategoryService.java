@@ -1,8 +1,7 @@
-package com.project.shopapp.services;
+package com.project.shopapp.services.category;
 
 import com.project.shopapp.dtos.CategoryDTO;
 import com.project.shopapp.models.Category;
-import org.springframework.data.crossstore.ChangeSetPersister;
 
 import java.util.List;
 
@@ -11,5 +10,6 @@ public interface ICategoryService {
     Category getCategoryById(long id);
     List<Category> getAllCategories();
     Category updateCategory(long categoryId, CategoryDTO category);
-    Category deleteCategory(long id) throws ChangeSetPersister.NotFoundException;
+    Category deleteCategory(long id) throws Exception;
+
 }

@@ -1,11 +1,18 @@
 package com.project.shopapp.models;
 
-import com.project.shopapp.services.IProductRedisService;
+import com.project.shopapp.services.product.IProductRedisService;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+Install Debezium and configure it to capture changes in the MySQL product table.
+
+Set up a Kafka Connect destination to consume the Debezium change data events.
+
+Implement a Spring Boot application that subscribes to the Kafka Connect destination and updates the Redis cache accordingly.
+* */
 @AllArgsConstructor
 public class ProductListener {
     private final IProductRedisService productRedisService;

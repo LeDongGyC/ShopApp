@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.project.shopapp.controllers.ProductController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,15 +21,16 @@ import java.time.format.DateTimeFormatter;
 
 @Configuration
 public class RedisConfig {
-
-    @Value("${spring.data.redis.host}") // Read 'spring.redis.host' property from application.yml
+    private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
+    @Value("${spring.data.redis.host}") // Read 'spring.data.redis.host' property from application.yml
     private String redisHost;
 
-    @Value("${spring.data.redis.port}") // Read 'spring.redis.port' property from application.yml
+    @Value("${spring.data.redis.port}") // Read 'spring.data.redis.port' property from application.yml
     private int redisPort;
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
+        logger.info(String.format("redisHost = %s, redisPort = %d", redisHost, redisPort));
         RedisStandaloneConfiguration configuration =
                 new RedisStandaloneConfiguration(redisHost, redisPort);
         return new LettuceConnectionFactory(configuration);

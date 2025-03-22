@@ -1,5 +1,6 @@
 package com.project.shopapp.configurations;
 
+import com.project.shopapp.models.User;
 import com.project.shopapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

@@ -12,6 +12,7 @@ import lombok.*;
 public class RegisterResponse {
     @JsonProperty("message")
     private String message;
+
     @JsonProperty("user")
     private User user;
 }

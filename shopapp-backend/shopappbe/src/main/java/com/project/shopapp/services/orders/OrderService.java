@@ -1,5 +1,4 @@
-package com.project.shopapp.services.impls;
-
+package com.project.shopapp.services.orders;
 
 import com.project.shopapp.dtos.CartItemDTO;
 import com.project.shopapp.dtos.OrderDTO;
@@ -7,8 +6,10 @@ import com.project.shopapp.dtos.OrderDetailDTO;
 import com.project.shopapp.dtos.OrderWithDetailsDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.*;
-import com.project.shopapp.repositories.*;
-import com.project.shopapp.services.IOrderService;
+import com.project.shopapp.repositories.OrderDetailRepository;
+import com.project.shopapp.repositories.OrderRepository;
+import com.project.shopapp.repositories.ProductRepository;
+import com.project.shopapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -17,16 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService implements IOrderService {
+public class OrderService implements IOrderService{
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
-    private final CouponRepository couponRepository;
     private final OrderDetailRepository orderDetailRepository;
 
     private final ModelMapper modelMapper;
@@ -37,7 +36,7 @@ public class OrderService implements IOrderService {
         //tìm xem user'id có tồn tại ko
         User user = userRepository
                 .findById(orderDTO.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("Cannot find user with id: " + orderDTO.getUserId()));
+                .orElseThrow(() -> new DataNotFoundException("Cannot find user with id: "+orderDTO.getUserId()));
         //convert orderDTO => Order
         //dùng thư viện Model Mapper
         // Tạo một luồng bảng ánh xạ riêng để kiểm soát việc ánh xạ
@@ -84,115 +83,11 @@ public class OrderService implements IOrderService {
             orderDetails.add(orderDetail);
         }
 
-        String couponCode = orderDTO.getCouponCode();
-        if (!couponCode.isEmpty()) {
-            Coupon coupon = couponRepository.findByCode(couponCode)
-                    .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
 
-            if (!coupon.isActive()) {
-                throw new IllegalArgumentException("Coupon is not active");
-            }
-
-            order.setCoupon(coupon);
-        } else {
-            order.setCoupon(null);
-        }
         // Lưu danh sách OrderDetail vào cơ sở dữ liệu
         orderDetailRepository.saveAll(orderDetails);
         return order;
     }
-
-    @Override
-    public Order getOrder(Long id) {
-        Order selectedOrder = orderRepository.findById(id).orElse(null);
-        return selectedOrder;
-    }
-
-    @Override
-    @Transactional
-    public Order updateOrder(Long id, OrderDTO orderDTO)
-            throws DataNotFoundException {
-        Order order = orderRepository.findById(id).orElseThrow(() ->
-                new DataNotFoundException("Cannot find order with id: " + id));
-        User existingUser = userRepository.findById(
-                orderDTO.getUserId()).orElseThrow(() ->
-                new DataNotFoundException("Cannot find user with id: " + id));
-        // Setting user
-        if (orderDTO.getUserId() != null) {
-            User user = new User();
-            user.setId(orderDTO.getUserId());
-            order.setUser(user);
-        }
-
-        if (orderDTO.getFullName() != null && !orderDTO.getFullName().trim().isEmpty()) {
-            order.setFullName(orderDTO.getFullName().trim());
-        }
-
-        if (orderDTO.getEmail() != null && !orderDTO.getEmail().trim().isEmpty()) {
-            order.setEmail(orderDTO.getEmail().trim());
-        }
-
-        if (orderDTO.getPhoneNumber() != null && !orderDTO.getPhoneNumber().trim().isEmpty()) {
-            order.setPhoneNumber(orderDTO.getPhoneNumber().trim());
-        }
-
-        if (orderDTO.getStatus() != null && !orderDTO.getStatus().trim().isEmpty()) {
-            order.setStatus(orderDTO.getStatus().trim());
-        }
-
-        if (orderDTO.getAddress() != null && !orderDTO.getAddress().trim().isEmpty()) {
-            order.setAddress(orderDTO.getAddress().trim());
-        }
-
-        if (orderDTO.getNote() != null && !orderDTO.getNote().trim().isEmpty()) {
-            order.setNote(orderDTO.getNote().trim());
-        }
-
-        if (orderDTO.getTotalMoney() != null) {
-            order.setTotalMoney(orderDTO.getTotalMoney());
-        }
-
-        if (orderDTO.getShippingMethod() != null && !orderDTO.getShippingMethod().trim().isEmpty()) {
-            order.setShippingMethod(orderDTO.getShippingMethod().trim());
-        }
-
-        if (orderDTO.getShippingAddress() != null && !orderDTO.getShippingAddress().trim().isEmpty()) {
-            order.setShippingAddress(orderDTO.getShippingAddress().trim());
-        }
-
-        if (orderDTO.getShippingDate() != null) {
-            order.setShippingDate(orderDTO.getShippingDate());
-        }
-
-        if (orderDTO.getPaymentMethod() != null && !orderDTO.getPaymentMethod().trim().isEmpty()) {
-            order.setPaymentMethod(orderDTO.getPaymentMethod().trim());
-        }
-
-        order.setUser(existingUser);
-        return orderRepository.save(order);
-    }
-
-    @Override
-    @Transactional
-    public void deleteOrder(Long id) {
-        Order order = orderRepository.findById(id).orElse(null);
-        //no hard-delete, => please soft-delete
-        if (order != null) {
-            order.setActive(false);
-            orderRepository.save(order);
-        }
-    }
-
-    @Override
-    public List<Order> findByUserId(Long userId) {
-        return orderRepository.findByUserId(userId);
-    }
-
-    @Override
-    public Page<Order> getOrdersByKeyword(String keyword, Pageable pageable) {
-        return orderRepository.findByKeyword(keyword, pageable);
-    }
-
     @Transactional
     public Order updateOrderWithDetails(OrderWithDetailsDTO orderWithDetailsDTO) {
         modelMapper.typeMap(OrderWithDetailsDTO.class, Order.class)
@@ -214,5 +109,47 @@ public class OrderService implements IOrderService {
 
         return savedOrder;
     }
-}
+    @Override
+    public Order getOrder(Long id) {
+        Order selectedOrder = orderRepository.findById(id).orElse(null);
+        return selectedOrder;
+    }
 
+    @Override
+    @Transactional
+    public Order updateOrder(Long id, OrderDTO orderDTO)
+            throws DataNotFoundException {
+        Order order = orderRepository.findById(id).orElseThrow(() ->
+                new DataNotFoundException("Cannot find order with id: " + id));
+        User existingUser = userRepository.findById(
+                orderDTO.getUserId()).orElseThrow(() ->
+                new DataNotFoundException("Cannot find user with id: " + id));
+        // Tạo một luồng bảng ánh xạ riêng để kiểm soát việc ánh xạ
+        modelMapper.typeMap(OrderDTO.class, Order.class)
+                .addMappings(mapper -> mapper.skip(Order::setId));
+        // Cập nhật các trường của đơn hàng từ orderDTO
+        modelMapper.map(orderDTO, order);
+        order.setUser(existingUser);
+        return orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void deleteOrder(Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        //no hard-delete, => please soft-delete
+        if(order != null) {
+            order.setActive(false);
+            orderRepository.save(order);
+        }
+    }
+    @Override
+    public List<Order> findByUserId(Long userId) {
+        return orderRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Page<Order> getOrdersByKeyword(String keyword, Pageable pageable) {
+        return orderRepository.findByKeyword(keyword, pageable);
+    }
+}

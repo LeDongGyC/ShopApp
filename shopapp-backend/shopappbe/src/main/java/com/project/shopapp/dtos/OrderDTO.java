@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -18,7 +20,7 @@ import java.util.List;
 public class OrderDTO {
 
     @JsonProperty("user_id")
-    //@Min(value = 1, message = "User's ID must be > 0")
+    @Min(value = 1, message = "User's ID must be > 0")
     private Long userId;
 
     @JsonProperty("fullname")
@@ -53,9 +55,6 @@ public class OrderDTO {
 
     @JsonProperty("payment_method")
     private String paymentMethod;
-
-    @JsonProperty("coupon_code")
-    private String couponCode;
 
     @JsonProperty("cart_items")
     private List<CartItemDTO> cartItems;

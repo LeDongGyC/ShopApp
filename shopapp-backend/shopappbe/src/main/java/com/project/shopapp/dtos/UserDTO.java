@@ -23,7 +23,7 @@ public class UserDTO {
 
     private String address;
 
-    //    @NotBlank(message = "Password cannot be blank")
+    @NotBlank(message = "Password cannot be blank")
     private String password;
 
     @JsonProperty("retype_password")
@@ -41,6 +41,4 @@ public class UserDTO {
     @NotNull(message = "Role ID is required")
     @JsonProperty("role_id")
     private Long roleId;
-
 }
-

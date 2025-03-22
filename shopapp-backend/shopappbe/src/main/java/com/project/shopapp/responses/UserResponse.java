@@ -1,11 +1,18 @@
 package com.project.shopapp.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.project.shopapp.models.Role;
-import com.project.shopapp.models.User;
+import com.project.shopapp.models.Category;
+import com.project.shopapp.models.OrderDetail;
+import com.project.shopapp.models.Product;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,7 +36,7 @@ public class UserResponse {
     private boolean active;
 
     @JsonProperty("date_of_birth")
-    private Date dateOfBirth;
+    private Date dateOfBirth;   
 
     @JsonProperty("facebook_account_id")
     private int facebookAccountId;
@@ -38,9 +45,8 @@ public class UserResponse {
     private int googleAccountId;
 
     @JsonProperty("role")
-    private Role role;
-
-    public static UserResponse fromUser(User user) {
+    private com.project.shopapp.models.Role role;
+    public static UserResponse fromUser(com.project.shopapp.models.User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())

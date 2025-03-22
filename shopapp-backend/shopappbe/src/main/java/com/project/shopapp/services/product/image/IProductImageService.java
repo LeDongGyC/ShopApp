@@ -1,4 +1,4 @@
-package com.project.shopapp.services;
+package com.project.shopapp.services.product.image;
 
 import com.project.shopapp.models.ProductImage;
 

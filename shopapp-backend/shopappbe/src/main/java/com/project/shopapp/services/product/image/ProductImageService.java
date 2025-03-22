@@ -1,9 +1,8 @@
-package com.project.shopapp.services.impls;
+package com.project.shopapp.services.product.image;
 
 import com.project.shopapp.exceptions.DataNotFoundException;
-import com.project.shopapp.repositories.ProductImageRepository;
 import com.project.shopapp.models.ProductImage;
-import com.project.shopapp.services.IProductImageService;
+import com.project.shopapp.repositories.ProductImageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductImageService implements IProductImageService {
+public class ProductImageService implements IProductImageService{
     private final ProductImageRepository productImageRepository;
     @Override
     @Transactional

@@ -1,11 +1,13 @@
 package com.project.shopapp.responses;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.project.shopapp.dtos.OrderDetailDTO;
 import com.project.shopapp.models.Order;
 import com.project.shopapp.models.OrderDetail;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -60,7 +62,7 @@ public class OrderResponse {
     private List<OrderDetail> orderDetails;
 
     public static OrderResponse fromOrder(Order order) {
-        return OrderResponse
+        OrderResponse orderResponse =  OrderResponse
                 .builder()
                 .id(order.getId())
                 .userId(order.getUser().getId())
@@ -78,5 +80,6 @@ public class OrderResponse {
                 .paymentMethod(order.getPaymentMethod())
                 .orderDetails(order.getOrderDetails())
                 .build();
+        return orderResponse;
     }
 }

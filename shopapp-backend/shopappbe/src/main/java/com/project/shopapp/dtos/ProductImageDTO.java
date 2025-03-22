@@ -20,4 +20,3 @@ public class ProductImageDTO {
     @JsonProperty("image_url")
     private String imageUrl;
 }
-

@@ -5,7 +5,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password:  ${MYSQL_ROOT_PASSWORD:dongle170503}
+    password: ${MYSQL_ROOT_PASSWORD:dongle170503}
   #    password:
   jpa:
     show-sql: true
@@ -25,7 +25,7 @@ spring:
     default-locale: en
   flyway:
     locations: classpath:/db/migration,classpath:/dev/db/migration
-      #Phiên bản baseline sẽ = 1 và không thực hiện bất kỳ thay đổi nào trong DB
+    #Phiên bản baseline sẽ = 1 và không thực hiện bất kỳ thay đổi nào trong DB
     baseline-on-migrate: true
     baseline-version: 0
   data:
@@ -42,3 +42,24 @@ logging:
   level:
     org:
       springframework.security: DEBUG
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    api-docs:
+      path: /api-docs
+    show-actuator: true
+
+#health check
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      base-path: /api/v1/actuator
+      exposure:
+        #include: "health"
+        include: "health, info"
+
+

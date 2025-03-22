@@ -1,8 +1,9 @@
 package com.project.shopapp.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
 import java.util.Date;
 
 @Data
@@ -20,6 +21,7 @@ public class UpdateUserDTO {
 
     private String address;
 
+    @JsonProperty("password")
     private String password;
 
     @JsonProperty("retype_password")
@@ -34,4 +36,3 @@ public class UpdateUserDTO {
     @JsonProperty("google_account_id")
     private int googleAccountId;
 }
-

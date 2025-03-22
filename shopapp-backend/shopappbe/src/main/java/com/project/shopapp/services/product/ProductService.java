@@ -1,27 +1,20 @@
-package com.project.shopapp.services.impls;
+package com.project.shopapp.services.product;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.shopapp.dtos.ProductDTO;
+import com.project.shopapp.dtos.ProductImageDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.exceptions.InvalidParamException;
+import com.project.shopapp.models.Category;
+import com.project.shopapp.models.Product;
+import com.project.shopapp.models.ProductImage;
 import com.project.shopapp.repositories.CategoryRepository;
 import com.project.shopapp.repositories.ProductImageRepository;
 import com.project.shopapp.repositories.ProductRepository;
 import com.project.shopapp.responses.ProductResponse;
-import com.project.shopapp.services.IProductRedisService;
-import com.project.shopapp.dtos.ProductDTO;
-import com.project.shopapp.dtos.ProductImageDTO;
-import com.project.shopapp.models.Category;
-import com.project.shopapp.models.Product;
-import com.project.shopapp.models.ProductImage;
-import com.project.shopapp.services.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -39,12 +32,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements IProductService {
+public class ProductService implements IProductService{
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private static String UPLOADS_FOLDER = "uploads";
-
     @Override
     @Transactional
     public Product createProduct(ProductDTO productDTO) throws DataNotFoundException {
@@ -52,7 +45,7 @@ public class ProductService implements IProductService {
                 .findById(productDTO.getCategoryId())
                 .orElseThrow(() ->
                         new DataNotFoundException(
-                                "Cannot find category with id: " + productDTO.getCategoryId()));
+                                "Cannot find category with id: "+productDTO.getCategoryId()));
 
         Product newProduct = Product.builder()
                 .name(productDTO.getName())
@@ -67,27 +60,24 @@ public class ProductService implements IProductService {
     @Override
     public Product getProductById(long productId) throws Exception {
         Optional<Product> optionalProduct = productRepository.getDetailProduct(productId);
-        if (optionalProduct.isPresent()) {
+        if(optionalProduct.isPresent()) {
             return optionalProduct.get();
         }
         throw new DataNotFoundException("Cannot find product with id =" + productId);
     }
-
     @Override
-    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
-        // Lấy danh sách sản phẩm theo trang(page) và giới hạn(limit)
-        return productRepository
-                .findAll(pageRequest)
-                .map(ProductResponse::fromProduct);
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        return productRepository.findProductsByIds(productIds);
     }
 
     @Override
-    public Page<ProductResponse> getAllProducts(String keyword, Long categoryId, PageRequest pageRequest) {
+    public Page<ProductResponse> getAllProducts(String keyword,
+                                                Long categoryId, PageRequest pageRequest) {
+        // Lấy danh sách sản phẩm theo trang (page), giới hạn (limit), và categoryId (nếu có)
         Page<Product> productsPage;
         productsPage = productRepository.searchProducts(categoryId, keyword, pageRequest);
         return productsPage.map(ProductResponse::fromProduct);
     }
-
     @Override
     @Transactional
     public Product updateProduct(
@@ -96,27 +86,27 @@ public class ProductService implements IProductService {
     )
             throws Exception {
         Product existingProduct = getProductById(id);
-        if (existingProduct != null) {
+        if(existingProduct != null) {
             //copy các thuộc tính từ DTO -> Product
             //Có thể sử dụng ModelMapper
             Category existingCategory = categoryRepository
                     .findById(productDTO.getCategoryId())
                     .orElseThrow(() ->
                             new DataNotFoundException(
-                                    "Cannot find category with id: " + productDTO.getCategoryId()));
-            if (productDTO.getName() != null && !productDTO.getName().isEmpty()) {
+                                    "Cannot find category with id: "+productDTO.getCategoryId()));
+            if(productDTO.getName() != null && !productDTO.getName().isEmpty()) {
                 existingProduct.setName(productDTO.getName());
             }
 
             existingProduct.setCategory(existingCategory);
-            if (productDTO.getPrice() >= 0) {
+            if(productDTO.getPrice() >= 0) {
                 existingProduct.setPrice(productDTO.getPrice());
             }
-            if (productDTO.getDescription() != null &&
+            if(productDTO.getDescription() != null &&
                     !productDTO.getDescription().isEmpty()) {
                 existingProduct.setDescription(productDTO.getDescription());
             }
-            if (productDTO.getThumbnail() != null &&
+            if(productDTO.getThumbnail() != null &&
                     !productDTO.getThumbnail().isEmpty()) {
                 existingProduct.setDescription(productDTO.getThumbnail());
             }
@@ -136,7 +126,6 @@ public class ProductService implements IProductService {
     public boolean existsByName(String name) {
         return productRepository.existsByName(name);
     }
-
     @Override
     @Transactional
     public ProductImage createProductImage(
@@ -146,27 +135,23 @@ public class ProductService implements IProductService {
                 .findById(productId)
                 .orElseThrow(() ->
                         new DataNotFoundException(
-                                "Cannot find product with id: " + productImageDTO.getProductId()));
+                                "Cannot find product with id: "+productImageDTO.getProductId()));
         ProductImage newProductImage = ProductImage.builder()
                 .product(existingProduct)
                 .imageUrl(productImageDTO.getImageUrl())
                 .build();
         //Ko cho insert quá 5 ảnh cho 1 sản phẩm
         int size = productImageRepository.findByProductId(productId).size();
-        if (size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
+        if(size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
             throw new InvalidParamException(
                     "Number of images must be <= "
-                            + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT);
+                    +ProductImage.MAXIMUM_IMAGES_PER_PRODUCT);
         }
         if (existingProduct.getThumbnail() == null ) {
             existingProduct.setThumbnail(newProductImage.getImageUrl());
         }
+        productRepository.save(existingProduct);
         return productImageRepository.save(newProductImage);
-    }
-
-    @Override
-    public List<Product> findProductsByIds(List<Long> productIds) {
-        return productRepository.findProductsByIds(productIds);
     }
     @Override
     public void deleteFile(String filename) throws IOException {
@@ -208,54 +193,4 @@ public class ProductService implements IProductService {
         return uniqueFilename;
     }
 
-    @Service
-    @RequiredArgsConstructor
-    public static class ProductRedisService implements IProductRedisService {
-        private final RedisTemplate<String, Object> redisTemplate;
-        private final ObjectMapper redisObjectMapper;
-        private String getKeyFrom(String keyword,
-                           Long categoryId,
-                           PageRequest pageRequest) {
-            int pageNumber = pageRequest.getPageNumber();
-            int pageSize = pageRequest.getPageSize();
-            Sort sort = pageRequest.getSort();
-            String sortDirection = sort.getOrderFor("id")
-                    .getDirection() == Sort.Direction.ASC ? "asc": "desc";
-            String key = String.format("all_products:%d:%d:%s", pageNumber, pageSize, sortDirection);
-            return key;
-            /*
-            {
-                "all_products:1:10:asc": "list of products object"
-            }
-            * */
-        }
-        @Override
-        public List<ProductResponse> getAllProducts(String keyword,
-                                                    Long categoryId,
-                                                    PageRequest pageRequest) throws JsonProcessingException {
-
-            String key = this.getKeyFrom(keyword, categoryId, pageRequest);
-            String json = (String) redisTemplate.opsForValue().get(key);
-            List<ProductResponse> productResponses =
-                    json != null ?
-                    redisObjectMapper.readValue(json, new TypeReference<List<ProductResponse>>() {})
-                    : null;
-            return productResponses;
-        }
-        @Override
-        public void clear(){
-            redisTemplate.getConnectionFactory().getConnection().flushAll();
-        }
-
-        @Override
-        //save to Redis
-        public void saveAllProducts(List<ProductResponse> productResponses,
-                                    String keyword,
-                                    Long categoryId,
-                                    PageRequest pageRequest) throws JsonProcessingException {
-            String key = this.getKeyFrom(keyword, categoryId, pageRequest);
-            String json = redisObjectMapper.writeValueAsString(productResponses);
-            redisTemplate.opsForValue().set(key, json);
-        }
-    }
 }

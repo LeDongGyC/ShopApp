@@ -1,11 +1,12 @@
 package com.project.shopapp.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -30,7 +31,7 @@ public class Order {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, length = 100)
+    @Column(name = "phone_number",nullable = false, length = 100)
     private String phoneNumber;
 
     @Column(name = "address", length = 100)
@@ -39,7 +40,7 @@ public class Order {
     @Column(name = "note", length = 100)
     private String note;
 
-    @Column(name = "order_date")
+    @Column(name="order_date")
     private LocalDate orderDate;
 
     @Column(name = "status")
@@ -69,10 +70,4 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderDetail> orderDetails;
-
-    @ManyToOne
-    @JoinColumn(name = "coupon_id", nullable = true)
-    @JsonBackReference
-    private Coupon coupon = null;
 }
-
