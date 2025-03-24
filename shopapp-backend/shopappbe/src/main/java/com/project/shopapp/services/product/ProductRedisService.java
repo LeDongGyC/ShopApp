@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.shopapp.responses.ProductResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,8 @@ import java.util.List;
 public class ProductRedisService implements IProductRedisService{
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper redisObjectMapper;
+    @Value("${spring.data.redis.use-redis-cache}")
+    private boolean useRedisCache;
     private String getKeyFrom(String keyword,
                        Long categoryId,
                        PageRequest pageRequest) {
@@ -34,6 +37,9 @@ public class ProductRedisService implements IProductRedisService{
                                                 Long categoryId,
                                                 PageRequest pageRequest) throws JsonProcessingException {
 
+        if(useRedisCache == false) {
+            return null;
+        }
         String key = this.getKeyFrom(keyword, categoryId, pageRequest);
         String json = (String) redisTemplate.opsForValue().get(key);
         List<ProductResponse> productResponses =
