@@ -1,5 +1,4 @@
 package com.project.shopapp.responses;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

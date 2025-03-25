@@ -1,4 +1,4 @@
-package com.project.shopapp.components.services.user;
+package com.project.shopapp.services.user;
 import com.project.shopapp.models.User;
 import com.project.shopapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;

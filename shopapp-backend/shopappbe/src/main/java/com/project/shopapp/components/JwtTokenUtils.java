@@ -1,4 +1,5 @@
 package com.project.shopapp.components;
+import com.project.shopapp.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.project.shopapp.exceptions.InvalidParamException;
@@ -33,7 +34,7 @@ public class JwtTokenUtils {
     private String secretKey;
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenUtils.class);
     private final TokenRepository tokenRepository;
-    public String generateToken(com.project.shopapp.models.User user) throws Exception{
+    public String generateToken(User user) throws Exception{
         //properties => claims
         Map<String, Object> claims = new HashMap<>();
         //this.generateSecretKey();
@@ -84,11 +85,14 @@ public class JwtTokenUtils {
     public String extractPhoneNumber(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token, User userDetails) {
         try {
             String phoneNumber = extractPhoneNumber(token);
             Token existingToken = tokenRepository.findByToken(token);
-            if(existingToken == null || existingToken.isRevoked() == true) {
+            if(existingToken == null ||
+                    existingToken.isRevoked() == true ||
+                    !userDetails.isActive()
+            ) {
                 return false;
             }
             return (phoneNumber.equals(userDetails.getUsername()))

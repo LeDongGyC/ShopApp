@@ -2,6 +2,7 @@ package com.project.shopapp.configurations;
 
 import com.project.shopapp.filters.JwtTokenFilter;
 import com.project.shopapp.models.Role;
+import com.project.shopapp.services.user.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.security.reactive.EndpointRequest;
@@ -33,6 +34,7 @@ import static org.springframework.http.HttpMethod.*;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
+    private final CustomOAuth2UserService oauth2UserService;
     @Value("${api.prefix}")
     private String apiPrefix;
     @Bean
@@ -87,22 +89,6 @@ public class WebSecurityConfig {
                 })
                 .csrf(AbstractHttpConfigurer::disable);
         http.securityMatcher(String.valueOf(EndpointRequest.toAnyEndpoint()));
-        /*
-        http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
-            @Override
-            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(List.of("*"));
-                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
-                configuration.setExposedHeaders(List.of("x-auth-token"));
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration);
-                httpSecurityCorsConfigurer.configurationSource(source);
-            }
-        });
-         */
-
         return http.build();
     }
 }
