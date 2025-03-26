@@ -7,7 +7,7 @@ import com.project.shopapp.models.Comment;
 import com.project.shopapp.repositories.CommentRepository;
 import com.project.shopapp.repositories.ProductRepository;
 import com.project.shopapp.repositories.UserRepository;
-import com.project.shopapp.responses.CommentResponse;
+import com.project.shopapp.responses.comment.CommentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

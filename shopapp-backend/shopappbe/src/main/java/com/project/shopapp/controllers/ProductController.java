@@ -6,8 +6,8 @@ import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dtos.*;
 import com.project.shopapp.models.Product;
 import com.project.shopapp.models.ProductImage;
-import com.project.shopapp.responses.ProductListResponse;
-import com.project.shopapp.responses.ProductResponse;
+import com.project.shopapp.responses.product.ProductListResponse;
+import com.project.shopapp.responses.product.ProductResponse;
 import com.project.shopapp.services.product.IProductRedisService;
 import com.project.shopapp.services.product.IProductService;
 import com.project.shopapp.utils.MessageKeys;
@@ -24,17 +24,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 

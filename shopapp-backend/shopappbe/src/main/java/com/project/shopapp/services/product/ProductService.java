@@ -10,7 +10,7 @@ import com.project.shopapp.models.ProductImage;
 import com.project.shopapp.repositories.CategoryRepository;
 import com.project.shopapp.repositories.ProductImageRepository;
 import com.project.shopapp.repositories.ProductRepository;
-import com.project.shopapp.responses.ProductResponse;
+import com.project.shopapp.responses.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

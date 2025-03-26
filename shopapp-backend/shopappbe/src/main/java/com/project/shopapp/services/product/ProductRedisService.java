@@ -3,7 +3,7 @@ package com.project.shopapp.services.product;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.shopapp.responses.ProductResponse;
+import com.project.shopapp.responses.product.ProductResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import lombok.RequiredArgsConstructor;

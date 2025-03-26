@@ -4,10 +4,10 @@ import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.exceptions.InvalidPasswordException;
 import com.project.shopapp.models.Token;
 import com.project.shopapp.models.User;
-import com.project.shopapp.responses.LoginResponse;
-import com.project.shopapp.responses.RegisterResponse;
-import com.project.shopapp.responses.UserListResponse;
-import com.project.shopapp.responses.UserResponse;
+import com.project.shopapp.responses.user.LoginResponse;
+import com.project.shopapp.responses.user.RegisterResponse;
+import com.project.shopapp.responses.user.UserListResponse;
+import com.project.shopapp.responses.user.UserResponse;
 import com.project.shopapp.services.token.ITokenService;
 import com.project.shopapp.services.user.IUserService;
 import com.project.shopapp.components.LocalizationUtils;
@@ -28,10 +28,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import com.project.shopapp.dtos.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${api.prefix}/users")

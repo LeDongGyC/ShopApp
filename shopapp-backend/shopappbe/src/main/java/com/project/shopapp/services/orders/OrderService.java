@@ -56,6 +56,7 @@ public class OrderService implements IOrderService{
         }
         order.setShippingDate(shippingDate);
         order.setActive(true);//đoạn này nên set sẵn trong sql
+        //EAV-Entity-Attribute-Value model
         order.setTotalMoney(orderDTO.getTotalMoney());
         orderRepository.save(order);
         // Tạo danh sách các đối tượng OrderDetail từ cartItems

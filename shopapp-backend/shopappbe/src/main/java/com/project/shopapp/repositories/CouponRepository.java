@@ -1,6 +1,5 @@
 package com.project.shopapp.repositories;
-
-import com.project.shopapp.models.Coupon;
+import com.project.shopapp.models.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

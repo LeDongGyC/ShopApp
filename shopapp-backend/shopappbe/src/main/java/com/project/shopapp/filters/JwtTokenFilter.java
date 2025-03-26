@@ -63,7 +63,7 @@ public class JwtTokenFilter extends OncePerRequestFilter{
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
-            }
+             }
             filterChain.doFilter(request, response); //enable bypass
         }catch (Exception e) {
             //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
@@ -80,6 +80,7 @@ public class JwtTokenFilter extends OncePerRequestFilter{
 
                 Pair.of(String.format("%s/roles**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/comments**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/coupons**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/products**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories**", apiPrefix), "GET"),

@@ -1,11 +1,9 @@
 package com.project.shopapp.services.product;
 import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;
-import com.project.shopapp.exceptions.DataNotFoundException;
-import com.project.shopapp.responses.ProductResponse;
+import com.project.shopapp.responses.product.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
 import com.project.shopapp.models.*;
 import org.springframework.web.multipart.MultipartFile;
 
