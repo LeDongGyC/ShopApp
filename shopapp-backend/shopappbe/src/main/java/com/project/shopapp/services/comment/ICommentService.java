@@ -15,4 +15,5 @@ public interface ICommentService {
 
     List<CommentResponse> getCommentsByUserAndProduct(Long userId, Long productId);
     List<CommentResponse> getCommentsByProduct(Long productId);
+    void generateFakeComments() throws Exception;
 }

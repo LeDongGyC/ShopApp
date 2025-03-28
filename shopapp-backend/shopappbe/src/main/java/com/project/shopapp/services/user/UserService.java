@@ -4,12 +4,14 @@ import com.project.shopapp.components.JwtTokenUtils;
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dtos.UpdateUserDTO;
 import com.project.shopapp.dtos.UserDTO;
+import com.project.shopapp.dtos.UserLoginDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
-
 import com.project.shopapp.exceptions.ExpiredTokenException;
 import com.project.shopapp.exceptions.InvalidPasswordException;
 import com.project.shopapp.exceptions.PermissionDenyException;
-import com.project.shopapp.models.*;
+import com.project.shopapp.models.Role;
+import com.project.shopapp.models.Token;
+import com.project.shopapp.models.User;
 import com.project.shopapp.repositories.RoleRepository;
 import com.project.shopapp.repositories.TokenRepository;
 import com.project.shopapp.repositories.UserRepository;
@@ -19,14 +21,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.project.shopapp.utils.ValidationUtils.isValidEmail;
 
 @RequiredArgsConstructor
 @Service
@@ -38,25 +40,30 @@ public class UserService implements IUserService{
     private final JwtTokenUtils jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final LocalizationUtils localizationUtils;
+
     @Override
     @Transactional
     public User createUser(UserDTO userDTO) throws Exception {
         //register user
-        String phoneNumber = userDTO.getPhoneNumber();
-        // Kiểm tra xem số điện thoại đã tồn tại hay chưa
-        if(userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new DataIntegrityViolationException("Số điện thoại đã tồn tại");
+        if (!userDTO.getPhoneNumber().isBlank() && userRepository.existsByPhoneNumber(userDTO.getPhoneNumber())) {
+            throw new DataIntegrityViolationException("Phone number already exists");
+        }
+        if (!userDTO.getEmail().isBlank() && userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new DataIntegrityViolationException("Email already exists");
         }
         Role role =roleRepository.findById(userDTO.getRoleId())
                 .orElseThrow(() -> new DataNotFoundException(
                         localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
-        if(role.getName().toUpperCase().equals(Role.ADMIN)) {
-            throw new PermissionDenyException("Không được phép đăng ký tài khoản Admin");
+
+
+        if (role.getName().equalsIgnoreCase(Role.ADMIN)) {
+            throw new PermissionDenyException("Registering admin accounts is not allowed");
         }
         //convert from userDTO => user
         User newUser = User.builder()
                 .fullName(userDTO.getFullName())
                 .phoneNumber(userDTO.getPhoneNumber())
+                .email(userDTO.getEmail())
                 .password(userDTO.getPassword())
                 .address(userDTO.getAddress())
                 .dateOfBirth(userDTO.getDateOfBirth())
@@ -67,8 +74,7 @@ public class UserService implements IUserService{
 
         newUser.setRole(role);
 
-        // Kiểm tra nếu có accountId, không yêu cầu password
-        if (userDTO.getFacebookAccountId() == 0 && userDTO.getGoogleAccountId() == 0) {
+        if (!userDTO.isSocialLogin()) {
             String password = userDTO.getPassword();
             String encodedPassword = passwordEncoder.encode(password);
             newUser.setPassword(encodedPassword);
@@ -76,43 +82,101 @@ public class UserService implements IUserService{
         return userRepository.save(newUser);
     }
 
+
     @Override
-    public String login(
-            String phoneNumber,
-            String password,
-            Long roleId
-    ) throws Exception {
-        Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
-        if(optionalUser.isEmpty()) {
+    public String login(UserLoginDTO userLoginDTO) throws Exception {
+        Optional<User> optionalUser = Optional.empty();
+
+        // Kiểm tra người dùng qua số điện thoại
+        if (userLoginDTO.getPhoneNumber() != null && !userLoginDTO.getPhoneNumber().isBlank()) {
+            optionalUser = userRepository.findByPhoneNumber(userLoginDTO.getPhoneNumber());
+        }
+
+        // Nếu không tìm thấy người dùng bằng số điện thoại, thử tìm qua email
+        if (optionalUser.isEmpty() && userLoginDTO.getEmail() != null) {
+            optionalUser = userRepository.findByEmail(userLoginDTO.getEmail());
+        }
+
+        // Nếu không tìm thấy người dùng, ném ngoại lệ
+        if (optionalUser.isEmpty()) {
             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
         }
-        //return optionalUser.get();//muốn trả JWT token ?
+
         User existingUser = optionalUser.get();
-        //check password
-        if (existingUser.getFacebookAccountId() == 0
-                && existingUser.getGoogleAccountId() == 0) {
-            if(!passwordEncoder.matches(password, existingUser.getPassword())) {
-                throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
-            }
-        }
-        /*
-        Optional<Role> optionalRole = roleRepository.findById(roleId);
-        if(optionalRole.isEmpty() || !roleId.equals(existingUser.getRole().getId())) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS));
-        }
-        */
-        if(!optionalUser.get().isActive()) {
+
+        // Kiểm tra tài khoản có bị khóa không
+        if (!existingUser.isActive()) {
             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
         }
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                phoneNumber, password,
-                existingUser.getAuthorities()
-        );
 
-        //authenticate with Java Spring security
-        authenticationManager.authenticate(authenticationToken);
+        // Tạo JWT token cho người dùng
         return jwtTokenUtil.generateToken(existingUser);
     }
+
+
+    @Override
+    public String loginSocial(UserLoginDTO userLoginDTO) throws Exception {
+        Optional<User> optionalUser = Optional.empty();
+        Role roleUser = roleRepository.findByName(Role.USER)
+                .orElseThrow(() -> new DataNotFoundException(
+                        localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
+
+        // Kiểm tra Google Account ID
+        if (userLoginDTO.isGoogleAccountIdValid()) {
+            optionalUser = userRepository.findByGoogleAccountId(userLoginDTO.getGoogleAccountId());
+
+            // Tạo người dùng mới nếu không tìm thấy
+            if (optionalUser.isEmpty()) {
+                User newUser = User.builder()
+                        .fullName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
+                        .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
+                        .profileImage(Optional.ofNullable(userLoginDTO.getProfileImage()).orElse(""))
+                        .role(roleUser)
+                        .googleAccountId(userLoginDTO.getGoogleAccountId())
+                        .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
+                        .active(true)
+                        .build();
+
+                // Lưu người dùng mới
+                newUser = userRepository.save(newUser);
+                optionalUser = Optional.of(newUser);
+            }
+        }
+        // Kiểm tra Facebook Account ID
+        else if (userLoginDTO.isFacebookAccountIdValid()) {
+            optionalUser = userRepository.findByFacebookAccountId(userLoginDTO.getFacebookAccountId());
+
+            // Tạo người dùng mới nếu không tìm thấy
+            if (optionalUser.isEmpty()) {
+                User newUser = User.builder()
+                        .fullName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
+                        .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
+                        .profileImage(Optional.ofNullable(userLoginDTO.getProfileImage()).orElse(""))
+                        .role(roleUser)
+                        .facebookAccountId(userLoginDTO.getFacebookAccountId())
+                        .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
+                        .active(true)
+                        .build();
+
+                // Lưu người dùng mới
+                newUser = userRepository.save(newUser);
+                optionalUser = Optional.of(newUser);
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid social account information.");
+        }
+
+        User user = optionalUser.get();
+
+        // Kiểm tra nếu tài khoản bị khóa
+        if (!user.isActive()) {
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
+        }
+
+        // Tạo JWT token cho người dùng
+        return jwtTokenUtil.generateToken(user);
+    }
+
     @Transactional
     @Override
     public User updateUser(Long userId, UpdateUserDTO updatedUserDTO) throws Exception {
@@ -121,31 +185,35 @@ public class UserService implements IUserService{
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
         // Check if the phone number is being changed and if it already exists for another user
+        /*
         String newPhoneNumber = updatedUserDTO.getPhoneNumber();
         if (!existingUser.getPhoneNumber().equals(newPhoneNumber) &&
                 userRepository.existsByPhoneNumber(newPhoneNumber)) {
             throw new DataIntegrityViolationException("Phone number already exists");
         }
-
+       */
         // Update user information based on the DTO
         if (updatedUserDTO.getFullName() != null) {
             existingUser.setFullName(updatedUserDTO.getFullName());
         }
+        /*
         if (newPhoneNumber != null) {
             existingUser.setPhoneNumber(newPhoneNumber);
         }
+        */
         if (updatedUserDTO.getAddress() != null) {
             existingUser.setAddress(updatedUserDTO.getAddress());
         }
         if (updatedUserDTO.getDateOfBirth() != null) {
             existingUser.setDateOfBirth(updatedUserDTO.getDateOfBirth());
         }
-        if (updatedUserDTO.getFacebookAccountId() > 0) {
+        if (updatedUserDTO.isFacebookAccountIdValid()) {
             existingUser.setFacebookAccountId(updatedUserDTO.getFacebookAccountId());
         }
-        if (updatedUserDTO.getGoogleAccountId() > 0) {
+        if (updatedUserDTO.isGoogleAccountIdValid()) {
             existingUser.setGoogleAccountId(updatedUserDTO.getGoogleAccountId());
         }
+
 
         // Update the password if it is provided in the DTO
         if (updatedUserDTO.getPassword() != null
@@ -167,14 +235,13 @@ public class UserService implements IUserService{
         if(jwtTokenUtil.isTokenExpired(token)) {
             throw new ExpiredTokenException("Token is expired");
         }
-        String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
-        Optional<User> user = userRepository.findByPhoneNumber(phoneNumber);
-
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            throw new Exception("User not found");
+        String subject = jwtTokenUtil.getSubject(token);
+        Optional<User> user;
+        user = userRepository.findByPhoneNumber(subject);
+        if (user.isEmpty() && isValidEmail(subject)) {
+            user = userRepository.findByEmail(subject);
         }
+        return user.orElseThrow(() -> new Exception("User not found"));
     }
     @Override
     public User getUserDetailsFromRefreshToken(String refreshToken) throws Exception {
@@ -209,6 +276,15 @@ public class UserService implements IUserService{
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
         existingUser.setActive(active);
+        userRepository.save(existingUser);
+    }
+
+    @Override
+    @Transactional
+    public void changeProfileImage(Long userId, String imageName) throws Exception {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+        existingUser.setProfileImage(imageName);
         userRepository.save(existingUser);
     }
 }

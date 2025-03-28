@@ -6,10 +6,8 @@ import com.project.shopapp.dtos.OrderDetailDTO;
 import com.project.shopapp.dtos.OrderWithDetailsDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.*;
-import com.project.shopapp.repositories.OrderDetailRepository;
-import com.project.shopapp.repositories.OrderRepository;
-import com.project.shopapp.repositories.ProductRepository;
-import com.project.shopapp.repositories.UserRepository;
+import com.project.shopapp.repositories.*;
+import com.project.shopapp.responses.order.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -18,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,7 @@ public class OrderService implements IOrderService{
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final CouponRepository couponRepository;
     private final OrderDetailRepository orderDetailRepository;
 
     private final ModelMapper modelMapper;
@@ -46,7 +47,7 @@ public class OrderService implements IOrderService{
         Order order = new Order();
         modelMapper.map(orderDTO, order);
         order.setUser(user);
-        order.setOrderDate(LocalDate.now());//lấy thời điểm hiện tại
+        order.setOrderDate(LocalDateTime.now());//lấy thời điểm hiện tại
         order.setStatus(OrderStatus.PENDING);
         //Kiểm tra shipping date phải >= ngày hôm nay
         LocalDate shippingDate = orderDTO.getShippingDate() == null
@@ -58,7 +59,6 @@ public class OrderService implements IOrderService{
         order.setActive(true);//đoạn này nên set sẵn trong sql
         //EAV-Entity-Attribute-Value model
         order.setTotalMoney(orderDTO.getTotalMoney());
-        orderRepository.save(order);
         // Tạo danh sách các đối tượng OrderDetail từ cartItems
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartItemDTO cartItemDTO : orderDTO.getCartItems()) {
@@ -84,9 +84,23 @@ public class OrderService implements IOrderService{
             orderDetails.add(orderDetail);
         }
 
+        //coupon
+        String couponCode = orderDTO.getCouponCode();
+        if (!couponCode.isEmpty()) {
+            Coupon coupon = couponRepository.findByCode(couponCode)
+                    .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
 
+            if (!coupon.isActive()) {
+                throw new IllegalArgumentException("Coupon is not active");
+            }
+
+            order.setCoupon(coupon);
+        } else {
+            order.setCoupon(null);
+        }
         // Lưu danh sách OrderDetail vào cơ sở dữ liệu
         orderDetailRepository.saveAll(orderDetails);
+        orderRepository.save(order);
         return order;
     }
     @Transactional
@@ -111,8 +125,8 @@ public class OrderService implements IOrderService{
         return savedOrder;
     }
     @Override
-    public Order getOrder(Long id) {
-        Order selectedOrder = orderRepository.findById(id).orElse(null);
+    public Order getOrderById(Long orderId) {
+        Order selectedOrder = orderRepository.findById(orderId).orElse(null);
         return selectedOrder;
     }
 
@@ -125,19 +139,70 @@ public class OrderService implements IOrderService{
         User existingUser = userRepository.findById(
                 orderDTO.getUserId()).orElseThrow(() ->
                 new DataNotFoundException("Cannot find user with id: " + id));
-        // Tạo một luồng bảng ánh xạ riêng để kiểm soát việc ánh xạ
+        /*
         modelMapper.typeMap(OrderDTO.class, Order.class)
                 .addMappings(mapper -> mapper.skip(Order::setId));
-        // Cập nhật các trường của đơn hàng từ orderDTO
         modelMapper.map(orderDTO, order);
+         */
+        // Setting user
+        if (orderDTO.getUserId() != null) {
+            User user = new User();
+            user.setId(orderDTO.getUserId());
+            order.setUser(user);
+        }
+
+        if (orderDTO.getFullName() != null && !orderDTO.getFullName().trim().isEmpty()) {
+            order.setFullName(orderDTO.getFullName().trim());
+        }
+
+        if (orderDTO.getEmail() != null && !orderDTO.getEmail().trim().isEmpty()) {
+            order.setEmail(orderDTO.getEmail().trim());
+        }
+
+        if (orderDTO.getPhoneNumber() != null && !orderDTO.getPhoneNumber().trim().isEmpty()) {
+            order.setPhoneNumber(orderDTO.getPhoneNumber().trim());
+        }
+
+        if (orderDTO.getStatus() != null && !orderDTO.getStatus().trim().isEmpty()) {
+            order.setStatus(orderDTO.getStatus().trim());
+        }
+
+        if (orderDTO.getAddress() != null && !orderDTO.getAddress().trim().isEmpty()) {
+            order.setAddress(orderDTO.getAddress().trim());
+        }
+
+        if (orderDTO.getNote() != null && !orderDTO.getNote().trim().isEmpty()) {
+            order.setNote(orderDTO.getNote().trim());
+        }
+
+        if (orderDTO.getTotalMoney() != null) {
+            order.setTotalMoney(orderDTO.getTotalMoney());
+        }
+
+        if (orderDTO.getShippingMethod() != null && !orderDTO.getShippingMethod().trim().isEmpty()) {
+            order.setShippingMethod(orderDTO.getShippingMethod().trim());
+        }
+
+        if (orderDTO.getShippingAddress() != null && !orderDTO.getShippingAddress().trim().isEmpty()) {
+            order.setShippingAddress(orderDTO.getShippingAddress().trim());
+        }
+
+        if (orderDTO.getShippingDate() != null) {
+            order.setShippingDate(orderDTO.getShippingDate());
+        }
+
+        if (orderDTO.getPaymentMethod() != null && !orderDTO.getPaymentMethod().trim().isEmpty()) {
+            order.setPaymentMethod(orderDTO.getPaymentMethod().trim());
+        }
+
         order.setUser(existingUser);
         return orderRepository.save(order);
     }
 
     @Override
     @Transactional
-    public void deleteOrder(Long id) {
-        Order order = orderRepository.findById(id).orElse(null);
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElse(null);
         //no hard-delete, => please soft-delete
         if(order != null) {
             order.setActive(false);
@@ -145,8 +210,9 @@ public class OrderService implements IOrderService{
         }
     }
     @Override
-    public List<Order> findByUserId(Long userId) {
-        return orderRepository.findByUserId(userId);
+    public List<OrderResponse> findByUserId(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orders.stream().map(order -> OrderResponse.fromOrder(order)).toList();
     }
 
     @Override

@@ -15,13 +15,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.*;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
@@ -49,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter{
                 return;
             }
             final String token = authHeader.substring(7);
-            final String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+            final String phoneNumber = jwtTokenUtil.getSubject(token);
             if (phoneNumber != null
                     && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User userDetails = (User) userDetailsService.loadUserByUsername(phoneNumber);
@@ -79,14 +77,18 @@ public class JwtTokenFilter extends OncePerRequestFilter{
                 Pair.of(String.format("%s/actuator/**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/roles**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/policies**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/comments**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/coupons**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/products**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories**", apiPrefix), "GET"),
+
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/login", apiPrefix), "POST"),
+                Pair.of(String.format("%s/users/profile-images/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/refreshToken", apiPrefix), "POST"),
+                Pair.of(String.format("%s/users/auth/social/callback", apiPrefix), "GET"),
 
                 // Swagger
                 Pair.of("/api-docs","GET"),
@@ -97,7 +99,15 @@ public class JwtTokenFilter extends OncePerRequestFilter{
                 Pair.of("/configuration/security","GET"),
                 Pair.of("/swagger-ui/**","GET"),
                 Pair.of("/swagger-ui.html", "GET"),
-                Pair.of("/swagger-ui/index.html", "GET")
+                Pair.of("/swagger-ui/index.html", "GET"),
+
+                //Đăng nhập social
+                Pair.of(String.format("%s/users/auth/social-login**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/users/auth/social/callback**", apiPrefix), "GET"),
+
+                Pair.of(String.format("%s/payments**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/payments**", apiPrefix), "POST")
+
         );
 
         String requestPath = request.getServletPath();

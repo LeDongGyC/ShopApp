@@ -1,43 +1,33 @@
 package com.project.shopapp.services.product;
 
+import com.github.javafaker.Faker;
 import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.exceptions.InvalidParamException;
-import com.project.shopapp.models.Category;
-import com.project.shopapp.models.Product;
-import com.project.shopapp.models.ProductImage;
-import com.project.shopapp.repositories.CategoryRepository;
-import com.project.shopapp.repositories.ProductImageRepository;
-import com.project.shopapp.repositories.ProductRepository;
+import com.project.shopapp.models.*;
+import com.project.shopapp.repositories.*;
 import com.project.shopapp.responses.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService implements IProductService{
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private static String UPLOADS_FOLDER = "uploads";
+    private final FavoriteRepository favoriteRepository;
     @Override
     @Transactional
     public Product createProduct(ProductDTO productDTO) throws DataNotFoundException {
@@ -153,44 +143,90 @@ public class ProductService implements IProductService{
         productRepository.save(existingProduct);
         return productImageRepository.save(newProductImage);
     }
-    @Override
-    public void deleteFile(String filename) throws IOException {
-        // Đường dẫn đến thư mục chứa file
-        java.nio.file.Path uploadDir = Paths.get(UPLOADS_FOLDER);
-        // Đường dẫn đầy đủ đến file cần xóa
-        java.nio.file.Path filePath = uploadDir.resolve(filename);
 
-        // Kiểm tra xem file tồn tại hay không
-        if (Files.exists(filePath)) {
-            // Xóa file
-            Files.delete(filePath);
+
+    @Override
+    @Transactional
+    public Product likeProduct(Long userId, Long productId) throws Exception {
+        // Check if the user and product exist
+        if (!userRepository.existsById(userId) || !productRepository.existsById(productId)) {
+            throw new DataNotFoundException("User or product not found");
+        }
+
+        // Check if the user has already liked the product
+        if (favoriteRepository.existsByUserIdAndProductId(userId, productId)) {
+            //throw new DataNotFoundException("Product already liked by the user");
         } else {
-            throw new FileNotFoundException("File not found: " + filename);
+            // Create a new favorite entry and save it
+            Favorite favorite = Favorite.builder()
+                    .product(productRepository.findById(productId).orElse(null))
+                    .user(userRepository.findById(userId).orElse(null))
+                    .build();
+            favoriteRepository.save(favorite);
         }
-    }
-    private boolean isImageFile(MultipartFile file) {
-        String contentType = file.getContentType();
-        return contentType != null && contentType.startsWith("image/");
+        // Return the liked product
+        return productRepository.findById(productId).orElse(null);
     }
     @Override
-    public String storeFile(MultipartFile file) throws IOException {
-        if (!isImageFile(file) || file.getOriginalFilename() == null) {
-            throw new IOException("Invalid image format");
+    @Transactional
+    public Product unlikeProduct(Long userId, Long productId) throws Exception {
+        // Check if the user and product exist
+        if (!userRepository.existsById(userId) || !productRepository.existsById(productId)) {
+            throw new DataNotFoundException("User or product not found");
         }
-        String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        // Thêm UUID vào trước tên file để đảm bảo tên file là duy nhất
-        String uniqueFilename = UUID.randomUUID().toString() + "_" + filename;
-        // Đường dẫn đến thư mục mà bạn muốn lưu file
-        java.nio.file.Path uploadDir = Paths.get(UPLOADS_FOLDER);
-        // Kiểm tra và tạo thư mục nếu nó không tồn tại
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
-        // Đường dẫn đầy đủ đến file
-        java.nio.file.Path destination = Paths.get(uploadDir.toString(), uniqueFilename);
-        // Sao chép file vào thư mục đích
-        Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-        return uniqueFilename;
-    }
 
+        // Check if the user has already liked the product
+        if (favoriteRepository.existsByUserIdAndProductId(userId, productId)) {
+            Favorite favorite = favoriteRepository.findByUserIdAndProductId(userId, productId);
+            favoriteRepository.delete(favorite);
+        }
+        return productRepository.findById(productId).orElse(null);
+    }
+    @Override
+    @Transactional
+    public List<ProductResponse> findFavoriteProductsByUserId(Long userId) throws Exception {
+        // Validate the userId
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new Exception("User not found with ID: " + userId);
+        }
+        // Retrieve favorite products for the given userId
+        List<Product> favoriteProducts = productRepository.findFavoriteProductsByUserId(userId);
+        // Convert Product entities to ProductResponse objects
+        return favoriteProducts.stream()
+                .map(ProductResponse::fromProduct)
+                .collect(Collectors.toList());
+    }
+    @Override
+    //@Transactional
+    public void generateFakeLikes() throws Exception {
+        Faker faker = new Faker();
+        Random random = new Random();
+
+        // Get all users with roleId = 1
+        List<User> users = userRepository.findByRoleId(1L);
+        // Get all products
+        List<Product> products = productRepository.findAll();
+        final int totalRecords = 1_000;
+        final int batchSize = 100;
+        List<Favorite> favorites = new ArrayList<>();
+        for (int i = 0; i < totalRecords; i++) {
+            // Select a random user and product
+            User user = users.get(random.nextInt(users.size()));
+            Product product = products.get(random.nextInt(products.size()));
+
+            if(!favoriteRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
+                // Generate a fake favorite
+                Favorite favorite = Favorite.builder()
+                        .user(user)
+                        .product(product)
+                        .build();
+                favorites.add(favorite);
+            }
+            if(favorites.size() >= batchSize) {
+                favoriteRepository.saveAll(favorites);
+                favorites.clear();
+            }
+        }
+    }
 }

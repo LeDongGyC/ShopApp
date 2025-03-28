@@ -18,6 +18,12 @@ public class OrderDetailResponse {
     @JsonProperty("product_id")
     private Long productId;
 
+    @JsonProperty("product_name")
+    private String productName;
+
+    @JsonProperty("thumbnail")
+    private String thumbnail;
+
     @JsonProperty("price")
     private Float price;
 
@@ -35,6 +41,8 @@ public class OrderDetailResponse {
                 .id(orderDetail.getId())
                 .orderId(orderDetail.getOrder().getId())
                 .productId(orderDetail.getProduct().getId())
+                .productName(orderDetail.getProduct().getName())
+                .thumbnail(orderDetail.getProduct().getThumbnail())
                 .price(orderDetail.getPrice())
                 .numberOfProducts(orderDetail.getNumberOfProducts())
                 .totalMoney(orderDetail.getTotalMoney())

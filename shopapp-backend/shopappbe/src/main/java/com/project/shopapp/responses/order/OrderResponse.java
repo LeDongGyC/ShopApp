@@ -1,10 +1,12 @@
 package com.project.shopapp.responses.order;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.shopapp.models.Order;
 import com.project.shopapp.models.OrderDetail;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -34,8 +36,8 @@ public class OrderResponse {
     private String note;
 
     @JsonProperty("order_date")
-    //@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-    private LocalDate orderDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private LocalDateTime orderDate;
 
     @JsonProperty("status")
     private String status;
@@ -44,21 +46,26 @@ public class OrderResponse {
     private double totalMoney;
 
     @JsonProperty("shipping_method")
-    private String shippingMethod;
+    private String shippingMethod = "";
 
     @JsonProperty("shipping_address")
-    private String shippingAddress;
+    private String shippingAddress = "";
 
     @JsonProperty("shipping_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
     private LocalDate shippingDate;
 
     @JsonProperty("payment_method")
-    private String paymentMethod;
+    private String paymentMethod = "";
 
     @JsonProperty("order_details")
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetailResponse> orderDetails;
 
     public static OrderResponse fromOrder(Order order) {
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        List<OrderDetailResponse> orderDetailResponses = orderDetails
+                .stream()
+                .map(orderDetail -> OrderDetailResponse.fromOrderDetail(orderDetail)).toList();
         OrderResponse orderResponse =  OrderResponse
                 .builder()
                 .id(order.getId())
@@ -75,7 +82,7 @@ public class OrderResponse {
                 .shippingAddress(order.getShippingAddress())
                 .shippingDate(order.getShippingDate())
                 .paymentMethod(order.getPaymentMethod())
-                .orderDetails(order.getOrderDetails())
+                .orderDetails(orderDetailResponses) //important
                 .build();
         return orderResponse;
     }

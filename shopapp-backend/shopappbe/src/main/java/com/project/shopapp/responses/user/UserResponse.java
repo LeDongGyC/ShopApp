@@ -23,6 +23,9 @@ public class UserResponse {
     @JsonProperty("address")
     private String address;
 
+    @JsonProperty("profile_image")
+    private String profileImage;
+
     @JsonProperty("is_active")
     private boolean active;
 
@@ -30,10 +33,10 @@ public class UserResponse {
     private Date dateOfBirth;   
 
     @JsonProperty("facebook_account_id")
-    private int facebookAccountId;
+    private String facebookAccountId;
 
     @JsonProperty("google_account_id")
-    private int googleAccountId;
+    private String googleAccountId;
 
     @JsonProperty("role")
     private com.project.shopapp.models.Role role;
@@ -43,6 +46,7 @@ public class UserResponse {
                 .fullName(user.getFullName())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
+                .profileImage(user.getProfileImage())
                 .active(user.isActive())
                 .dateOfBirth(user.getDateOfBirth())
                 .facebookAccountId(user.getFacebookAccountId())

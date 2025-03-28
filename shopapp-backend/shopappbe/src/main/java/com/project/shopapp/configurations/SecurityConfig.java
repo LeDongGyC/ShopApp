@@ -13,20 +13,36 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.Optional;
 
 @Configuration
 
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final UserRepository userRepository;
+    private final WebClient userInfoClient;
     //user's detail object
     @Bean
     public UserDetailsService userDetailsService() {
-        return phoneNumber -> userRepository
-                .findByPhoneNumber(phoneNumber)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "Cannot find user with phone number = "+phoneNumber));
+        return subject -> {
+            // Attempt to find user by phone number
+            Optional<User> userByPhoneNumber = userRepository.findByPhoneNumber(subject);
+            if (userByPhoneNumber.isPresent()) {
+                return userByPhoneNumber.get(); // Return UserDetails if found
+            }
+
+            // If user not found by phone number, attempt to find by email
+            Optional<User> userByEmail = userRepository.findByEmail(subject);
+            if (userByEmail.isPresent()) {
+                return userByEmail.get(); // Return UserDetails if found
+            }
+
+            // If user not found by either phone number or email, throw UsernameNotFoundException
+            throw new UsernameNotFoundException("User not found with subject: " + subject);
+        };
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,4 +61,9 @@ public class SecurityConfig {
     ) throws Exception {
         return config.getAuthenticationManager();
     }
+    @Bean
+    public OpaqueTokenIntrospector introspector() {
+        return new GoogleOpaqueTokenIntrospector(userInfoClient);
+    }
+
 }
